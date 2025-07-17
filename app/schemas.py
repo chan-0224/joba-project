@@ -3,10 +3,18 @@ from pydantic import BaseModel
 class UserBase(BaseModel):
     name: str
 
-class UserCreate(UserBase):
-    pass
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    name: str
 
-class User(UserBase):
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class User(BaseModel):
     id: int
+    username: str
+    name: str
     class Config:
         orm_mode = True 
