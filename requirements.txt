@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+SQLAlchemy
+pymysql
+python-dotenv
+google-cloud-storage
+pydantic-settings 
+cryptography
