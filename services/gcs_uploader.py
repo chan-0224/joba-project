@@ -27,8 +27,7 @@ def upload_file_to_gcs(file_object: UploadFile, destination_blob_name: str) -> s
         blob = bucket.blob(destination_blob_name)
         # 파일을 읽어서 업로드
         blob.upload_from_file(file_object.file, content_type=file_object.content_type)
-        # 공개 URL 생성
-        blob.make_public()
+        # blob.make_public()  # Uniform bucket-level access 환경에서는 사용 불가, 삭제
         return f"https://storage.googleapis.com/{bucket_name}/{destination_blob_name}"
     except Exception as e:
         logging.error("GCS 파일 업로드 실패: %s", e)
