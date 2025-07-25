@@ -3,7 +3,7 @@
 ## 1. 시스템 개요
 
 - **프레임워크**: FastAPI (Python)
-- **DB**: MySQL (SQLAlchemy ORM)
+- **DB**: PostgreSQL (SQLAlchemy ORM)
 - **파일 저장**: Google Cloud Storage (GCS)
 - **배포 환경**: Render
 - **환경 변수**: .env 또는 Render 환경 변수 사용 (민감 정보 하드코딩 금지)
@@ -37,11 +37,26 @@
 
 | 변수명                        | 설명                                      |
 |-------------------------------|-------------------------------------------|
-| DATABASE_URL                  | MySQL 접속 URI                            |
+| DATABASE_URL                  | PostgreSQL 접속 URI (예: Neon)             |
 | GCP_PROJECT_ID                | GCP 프로젝트 ID                           |
 | GCS_BUCKET_NAME               | GCS 버킷 이름                             |
 | GCP_SERVICE_ACCOUNT_KEY_JSON  | GCP 서비스 계정 키 (JSON 전체, 문자열)     |
 | UV_PORT                       | Uvicorn 포트 (Render 배포 시 $PORT 사용)   |
+
+### 환경 변수 예시 (.env 또는 Render 환경 변수)
+
+```
+# Neon(PostgreSQL) 예시
+DATABASE_URL=postgresql+psycopg2://<username>:<password>@<host>/<database>
+
+# GCP
+GCP_PROJECT_ID=your-gcp-project-id
+GCS_BUCKET_NAME=your-gcs-bucket
+GCP_SERVICE_ACCOUNT_KEY_JSON='{"type": ... }'  # JSON 전체 문자열
+
+# Render
+UV_PORT=10000  # Render에서는 $PORT 환경변수 자동 주입됨
+```
 
 ---
 
@@ -114,3 +129,43 @@
 - **회원가입/로그인/인증/인가** 기능 없음 (user_id는 외부에서 임시로 전달)
 - **공고 목록/상세/수정/삭제** 등은 미구현
 - **보안**: 모든 민감 정보는 환경 변수로만 관리 
+
+---
+## **에러 요약**
+```
+ModuleNotFoundError: No module named 'psycopg2'
+```
+즉, **psycopg2** 패키지가 설치되어 있지 않아서 PostgreSQL(Neon) DB에 연결할 수 없습니다.
+
+---
+
+## **해결 방법**
+
+### 1. requirements.txt에 psycopg2 추가
+requirements.txt 파일에 아래 한 줄을 추가하세요:
+```
+psycopg2-binary
+```
+> **psycopg2** 대신 **psycopg2-binary**를 사용하는 것이 배포 환경에서 더 간편합니다.
+
+---
+
+### 2. GitHub에 푸시
+- requirements.txt 수정 후, 변경사항을 GitHub에 push 하세요.
+
+---
+
+### 3. Render에서 자동 재배포
+- GitHub에 푸시하면 Render가 자동으로 다시 배포를 시작합니다.
+
+---
+
+## **정리**
+1. requirements.txt에 psycopg2-binary 추가
+2. GitHub에 푸시
+3. Render에서 재배포 확인
+
+---
+
+이렇게 하면 DB 연결 관련 에러가 해결되고, 서버가 정상적으로 실행될 것입니다!  
+추가로 에러가 발생하면, 새 로그를 복사해서 보여주시면 바로 도와드릴 수 있습니다. 
