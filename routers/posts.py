@@ -92,8 +92,9 @@ def list_posts(
         query = query.order_by(Post.created_at.desc())
     elif sort == "popular":
         query = query.order_by(Post.views.desc())
-    elif sort == "oldest":
-        query = query.order_by(Post.created_at.asc())
+    elif sort == "random":
+        from sqlalchemy import func
+        query = query.order_by(func.random())
     else:
         raise HTTPException(status_code=400, detail="지원하지 않는 정렬 방식입니다.")
     # 페이지네이션
@@ -101,4 +102,11 @@ def list_posts(
     posts = query.offset(offset).limit(size).all()
     # SQLAlchemy 모델을 Pydantic 모델로 변환
     post_responses = [PostResponse.model_validate(post) for post in posts]
-    return PostListResponse(total_count=total_count, posts=post_responses) 
+    return PostListResponse(total_count=total_count, posts=post_responses)
+
+@router.get("/posts/{post_id}", response_model=PostResponse)
+def get_post_detail(post_id: int, db: Session = Depends(get_db)):
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return PostResponse.model_validate(post) 
