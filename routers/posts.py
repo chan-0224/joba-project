@@ -53,9 +53,9 @@ def create_post(
 @router.get("/posts", response_model=PostListResponse)
 def list_posts(
     db: Session = Depends(get_db),
-    sort: str = Query("latest", description="정렬 기준: 'latest'(최신순), 'popular'(인기순), 'oldest'(오래된 순)"),
-    track: Optional[str] = Query(None, description="모집 분야 (예: 기획, 디자인)"),
-    headcount: Optional[str] = Query(None, description="모집 인원 (예: 1~2인, 3~5인, 인원 미정)"),
+    sort: str = Query("latest", description="정렬 기준: 'latest'(최신순), 'popular'(인기순), 'random'(랜덤순)"),
+    recruitment_field: Optional[RecruitmentFieldEnum] = Query(None, description="모집 분야"),
+    recruitment_headcount: Optional[RecruitmentHeadcountEnum] = Query(None, description="모집 인원"),
     school_name: Optional[str] = Query(None, description="학교 이름 (target_school_name 또는 description/title에 포함)"),
     deadline_before: Optional[datetime] = Query(None, description="모집 마감일 이전 (YYYY-MM-DDTHH:MM:SS 형식)"),
     q: Optional[str] = Query(None, description="공고 제목 또는 설명에서 검색할 키워드"),
@@ -64,10 +64,10 @@ def list_posts(
 ):
     query = db.query(Post)
     # 필터링
-    if track:
-        query = query.filter(Post.recruitment_field == track)
-    if headcount:
-        query = query.filter(Post.recruitment_headcount == headcount)
+    if recruitment_field:
+        query = query.filter(Post.recruitment_field == recruitment_field.value)
+    if recruitment_headcount:
+        query = query.filter(Post.recruitment_headcount == recruitment_headcount.value)
     if school_name:
         query = query.filter(
             or_(
