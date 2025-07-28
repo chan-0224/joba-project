@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from database import get_db, Post
-from schemas import PostCreate, PostResponse, PostListResponse
+from schemas import PostCreate, PostResponse, PostListResponse, RecruitmentFieldEnum, RecruitmentHeadcountEnum, PostOptionsResponse
 from services.gcs_uploader import upload_file_to_gcs, generate_unique_blob_name
 import logging
 from sqlalchemy import or_
@@ -109,4 +109,16 @@ def get_post_detail(post_id: int, db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    return PostResponse.model_validate(post) 
+    return PostResponse.model_validate(post)
+
+@router.get("/posts/options", response_model=PostOptionsResponse)
+def get_post_options():
+    """
+    공고 작성 시 선택 가능한 모집 분야 및 모집 인원 목록을 반환합니다.
+    """
+    recruitment_fields = [e.value for e in RecruitmentFieldEnum]
+    recruitment_headcounts = [e.value for e in RecruitmentHeadcountEnum]
+    return PostOptionsResponse(
+        recruitment_fields=recruitment_fields,
+        recruitment_headcounts=recruitment_headcounts
+    ) 
