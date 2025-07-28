@@ -2,7 +2,7 @@ import os
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
-# .env 파일 로드 (Render 환경에서는 무시됨)
+# .env 파일 로드
 load_dotenv()
 
 class Settings(BaseSettings):

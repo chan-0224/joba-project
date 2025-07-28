@@ -16,6 +16,11 @@ class RecruitmentHeadcountEnum(str, Enum):
     SIX_TO_TEN = "6~10인"
     UNSPECIFIED = "인원미정"
 
+class SortEnum(str, Enum):
+    LATEST = "최신순"
+    POPULAR = "인기순"
+    RANDOM = "랜덤순"
+
 class PostCreate(BaseModel):
     user_id: int
     title: str = Field(..., max_length=255)

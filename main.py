@@ -5,7 +5,7 @@ from database import Base, engine
 
 app = FastAPI()
 
-# CORS 설정 (프론트엔드 도메인에 맞게 origins 수정 가능)
+# CORS 설정
 origins = [
     "*",  # 개발 시 전체 허용, 배포 시 도메인 제한 권장
 ]
@@ -20,7 +20,7 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(posts.router)
 
-# DB 테이블 생성 (최초 실행 시)
+# DB 테이블 생성
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine) 

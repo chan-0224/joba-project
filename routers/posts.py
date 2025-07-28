@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from database import get_db, Post
-from schemas import PostCreate, PostResponse, PostListResponse, RecruitmentFieldEnum, RecruitmentHeadcountEnum, PostOptionsResponse
+from schemas import PostCreate, PostResponse, PostListResponse, RecruitmentFieldEnum, RecruitmentHeadcountEnum, PostOptionsResponse, SortEnum
 from services.gcs_uploader import upload_file_to_gcs, generate_unique_blob_name
 import logging
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from datetime import datetime
 from typing import Optional
 
@@ -16,18 +16,20 @@ def create_post(
     image_file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    # 1. 이미지 파일 유효성 검사 (content_type, filename None 방지)
+    # 이미지 파일 유효성 검사
     if not image_file.content_type or not image_file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="이미지 파일만 업로드 가능합니다.")
+    
     filename = image_file.filename or "uploaded_image"
     try:
-        # 2. GCS 업로드
+        # GCS 업로드
         blob_name = generate_unique_blob_name(filename)
         image_url = upload_file_to_gcs(image_file, blob_name)
     except Exception as e:
         logging.error(f"GCS 업로드 실패: {e}")
         raise HTTPException(status_code=500, detail="이미지 업로드에 실패했습니다.")
-    # 3. DB 저장
+    
+    # DB 저장
     try:
         post = Post(
             user_id=post_data.user_id,
@@ -53,16 +55,17 @@ def create_post(
 @router.get("/posts", response_model=PostListResponse)
 def list_posts(
     db: Session = Depends(get_db),
-    sort: str = Query("latest", description="정렬 기준: 'latest'(최신순), 'popular'(인기순), 'random'(랜덤순)"),
+    sort: SortEnum = Query(SortEnum.LATEST, description="정렬 기준"),
     recruitment_field: Optional[RecruitmentFieldEnum] = Query(None, description="모집 분야"),
     recruitment_headcount: Optional[RecruitmentHeadcountEnum] = Query(None, description="모집 인원"),
-    school_name: Optional[str] = Query(None, description="학교 이름 (target_school_name 또는 description/title에 포함)"),
-    deadline_before: Optional[datetime] = Query(None, description="모집 마감일 이전 (YYYY-MM-DDTHH:MM:SS 형식)"),
-    q: Optional[str] = Query(None, description="공고 제목 또는 설명에서 검색할 키워드"),
+    school_name: Optional[str] = Query(None, description="학교 이름"),
+    deadline_before: Optional[datetime] = Query(None, description="모집 마감일 이전"),
+    q: Optional[str] = Query(None, description="검색 키워드"),
     page: int = Query(1, ge=1, description="페이지 번호"),
     size: int = Query(10, ge=1, le=100, description="페이지당 공고 개수")
 ):
     query = db.query(Post)
+    
     # 필터링
     if recruitment_field:
         query = query.filter(Post.recruitment_field == recruitment_field.value)
@@ -85,22 +88,25 @@ def list_posts(
                 Post.description.contains(q)
             )
         )
-    # 총 개수 (페이지네이션 전)
+    
+    # 총 개수
     total_count = query.count()
+    
     # 정렬
-    if sort == "latest":
+    if sort == SortEnum.LATEST:
         query = query.order_by(Post.created_at.desc())
-    elif sort == "popular":
+    elif sort == SortEnum.POPULAR:
         query = query.order_by(Post.views.desc())
-    elif sort == "random":
-        from sqlalchemy import func
+    elif sort == SortEnum.RANDOM:
         query = query.order_by(func.random())
     else:
         raise HTTPException(status_code=400, detail="지원하지 않는 정렬 방식입니다.")
+    
     # 페이지네이션
     offset = (page - 1) * size
     posts = query.offset(offset).limit(size).all()
-    # SQLAlchemy 모델을 Pydantic 모델로 변환
+    
+    # 응답 변환
     post_responses = [PostResponse.model_validate(post) for post in posts]
     return PostListResponse(total_count=total_count, posts=post_responses)
 
@@ -108,7 +114,7 @@ def list_posts(
 def get_post_detail(post_id: int, db: Session = Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
+        raise HTTPException(status_code=404, detail="공고를 찾을 수 없습니다.")
     return PostResponse.model_validate(post)
 
 @router.get("/posts/options", response_model=PostOptionsResponse)
