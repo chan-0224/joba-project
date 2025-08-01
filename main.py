@@ -29,6 +29,7 @@ def on_startup():
 
 # 서버 슬립 방지를 위한 핑 엔드포인트
 @app.get("/ping")
+@app.head("/ping")
 def ping():
     return {
         "status": "ok",
@@ -38,6 +39,7 @@ def ping():
 
 # 헬스체크 엔드포인트
 @app.get("/health")
+@app.head("/health")
 def health_check():
     return {
         "status": "healthy",
