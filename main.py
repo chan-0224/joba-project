@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import posts
+from routers import posts, applications
 from database import Base, engine
+from datetime import datetime
 
 app = FastAPI()
 
@@ -19,8 +20,27 @@ app.add_middleware(
 
 # 라우터 등록
 app.include_router(posts.router)
+app.include_router(applications.router)
 
 # DB 테이블 생성
 @app.on_event("startup")
 def on_startup():
-    Base.metadata.create_all(bind=engine) 
+    Base.metadata.create_all(bind=engine)
+
+# 서버 슬립 방지를 위한 핑 엔드포인트
+@app.get("/ping")
+def ping():
+    return {
+        "status": "ok",
+        "timestamp": datetime.now().isoformat(),
+        "message": "Server is running"
+    }
+
+# 헬스체크 엔드포인트
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "joba-backend"
+    }
