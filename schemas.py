@@ -27,6 +27,18 @@ class ApplicationStatusEnum(str, Enum):
     ACCEPTED = "합격"
     REJECTED = "불합격"
 
+class MeetingTime(BaseModel):
+    day: str = Field(..., description="요일 (월, 화, 수, 목, 금, 토, 일)")
+    time: str = Field(..., description="시간 (HH:MM 형식, 예: 14:00)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "day": "월",
+                "time": "14:00"
+            }
+        }
+
 class PostCreate(BaseModel):
     user_id: int
     title: str = Field(..., max_length=255)
@@ -74,7 +86,15 @@ class ApplicationCreate(BaseModel):
     applicant_id: int
     motivation: str
     most_memorable_project: str
-    meeting_available_time: List[Dict[str, str]]  # [{"day": "월", "time": "14:00"}, ...]
+    meeting_available_time: List[MeetingTime] = Field(
+        ..., 
+        description="면접 가능 시간 목록",
+        example=[
+            {"day": "월", "time": "14:00"},
+            {"day": "수", "time": "10:00"},
+            {"day": "금", "time": "16:00"}
+        ]
+    )
     aspirations: str
 
     class Config:
@@ -87,7 +107,7 @@ class ApplicationResponse(BaseModel):
     motivation: str
     most_memorable_project: str
     portfolio_pdf_url: str
-    meeting_available_time: List[Dict[str, str]]
+    meeting_available_time: List[MeetingTime]
     aspirations: str
     created_at: datetime
     status: str
