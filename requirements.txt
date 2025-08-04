@@ -1,9 +1,0 @@
-fastapi
-uvicorn[standard]
-SQLAlchemy
-python-dotenv
-google-cloud-storage
-pydantic-settings 
-cryptography
-python-multipart
-psycopg2-binary
