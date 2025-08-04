@@ -7,3 +7,5 @@ pydantic-settings
 cryptography
 python-multipart
 psycopg2-binary
+httpx
+python-jose

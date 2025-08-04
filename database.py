@@ -28,6 +28,7 @@ class Post(Base):
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
     views = Column(Integer, nullable=False, default=0)
 
+
 class Application(Base):
     __tablename__ = "applications"
 
@@ -46,6 +47,29 @@ class Application(Base):
     __table_args__ = (
         UniqueConstraint('applicant_id', 'post_id', name='unique_applicant_post'),
     )
+
+# 사용자
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    kakao_id = Column(String, unique=True, nullable=True)
+    naver_id = Column(String, unique=True, nullable=True)
+    google_id = Column(String, unique=True, nullable=True)
+
+    email = Column(String, unique=True, nullable=True)
+
+    # 가입하기에서 받는 필드
+    nickname = Column(String, nullable=True)
+    track = Column(String, nullable=True)
+    school = Column(String, nullable=True)
+    portfolio_url = Column(Text, nullable=True)
+
+    is_onboarded = Column(Boolean, nullable=False, default=False)
+
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
 # DB 세션 의존성
 from typing import Generator
