@@ -46,7 +46,6 @@ def get_access_token(code: str):
 def get_user_info(token: str):
     """카카오 사용자 정보 조회"""
     headers = {"Authorization": f"Bearer {token}"}
-    
     try:
         response = httpx.get("https://kapi.kakao.com/v2/user/me", headers=headers, timeout=10.0)
         if response.status_code != 200:

@@ -87,6 +87,20 @@ class Settings(BaseSettings):
         if missing_vars:
             raise ValueError(f"필수 환경변수가 설정되지 않았습니다: {', '.join(missing_vars)}")
 
+    KAKAO_CLIENT_ID: str
+    KAKAO_CLIENT_SECRET: str
+    KAKAO_REDIRECT_URI: str
+
+    NAVER_CLIENT_ID: str
+    NAVER_CLIENT_SECRET: str
+    NAVER_REDIRECT_URI: str
+
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+    GOOGLE_REDIRECT_URI: str
+
+    JWT_SECRET: str
+
     model_config = dict(
         env_file=".env",  # 로컬 개발용
         env_file_encoding="utf-8",
