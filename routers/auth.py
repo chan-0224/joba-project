@@ -16,7 +16,6 @@ from pydantic import BaseModel, HttpUrl, field_validator
 
 router = APIRouter(prefix="/auth")
 
-
 def get_current_user(
     authorization: str = Header(None, alias="Authorization"),
     db: Session = Depends(get_db),
@@ -237,7 +236,6 @@ class SignupForm(BaseModel):
         if v not in allowed:
             raise ValueError(f"track must be one of {allowed}")
         return v
-
 
 @router.post("/signup")
 async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):

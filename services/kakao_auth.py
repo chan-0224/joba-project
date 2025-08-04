@@ -22,4 +22,4 @@ def get_access_token(code: str):
 def get_user_info(token: str):
     headers = {"Authorization": f"Bearer {token}"}
     response = httpx.get("https://kapi.kakao.com/v2/user/me", headers=headers)
-    return response.json() 
+    return response.json()
