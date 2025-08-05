@@ -27,6 +27,12 @@ class ApplicationStatusEnum(str, Enum):
     ACCEPTED = "합격"
     REJECTED = "불합격"
 
+class QuestionTypeEnum(str, Enum):
+    TEXT_BOX = "TEXT_BOX"
+    LINK = "LINK"
+    ATTACHMENT = "ATTACHMENT"
+    CHOICES = "CHOICES"
+
 class MeetingTime(BaseModel):
     day: str = Field(..., description="요일 (월, 화, 수, 목, 금, 토, 일)")
     time: str = Field(..., description="시간 (HH:MM 형식, 예: 14:00)")
@@ -81,38 +87,77 @@ class PostOptionsResponse(BaseModel):
     recruitment_fields: List[str]
     recruitment_headcounts: List[str]
 
-class ApplicationCreate(BaseModel):
+# 새로운 스키마들
+class PostQuestionCreate(BaseModel):
+    question_type: QuestionTypeEnum
+    question_content: str
+    is_required: bool = False
+    choices: Optional[List[str]] = None  # CHOICES 타입일 때만 사용
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "question_type": "TEXT_BOX",
+                "question_content": "가장 기억에 남는 프로젝트는 무엇인가요?",
+                "is_required": True
+            }
+        }
+
+class PostQuestionsRequest(BaseModel):
+    questions: List[PostQuestionCreate]
+
+class PostQuestionResponse(BaseModel):
+    id: int
     post_id: int
-    applicant_id: int
-    motivation: str
-    most_memorable_project: str
-    meeting_available_time: List[MeetingTime] = Field(
-        ..., 
-        description="면접 가능 시간 목록",
-        example=[
-            {"day": "월", "time": "14:00"},
-            {"day": "수", "time": "10:00"},
-            {"day": "금", "time": "16:00"}
-        ]
-    )
-    aspirations: str
+    question_type: str
+    question_content: str
+    is_required: bool
+    choices: Optional[List[str]] = None
+    created_at: datetime
 
     class Config:
         from_attributes = True
+
+class ApplicationAnswerCreate(BaseModel):
+    post_question_id: int
+    answer_content: str
+
+class ApplicationCreate(BaseModel):
+    post_id: int
+    applicant_id: int
+    answers: List[ApplicationAnswerCreate]
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "post_id": 1,
+                "applicant_id": 123,
+                "answers": [
+                    {
+                        "post_question_id": 1,
+                        "answer_content": "쇼핑몰 프로젝트입니다."
+                    }
+                ]
+            }
+        }
 
 class ApplicationResponse(BaseModel):
     id: int
     post_id: int
     applicant_id: int
-    motivation: str
-    most_memorable_project: str
-    portfolio_pdf_url: str
-    meeting_available_time: List[MeetingTime]
-    aspirations: str
-    created_at: datetime
     status: str
-    post_title: str  # 공고 제목도 함께 반환
-    total_applications: int  # 해당 공고의 총 지원자 수
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ApplicationAnswerResponse(BaseModel):
+    id: int
+    application_id: int
+    post_question_id: int
+    answer_content: str
+    created_at: datetime
 
     class Config:
         from_attributes = True 

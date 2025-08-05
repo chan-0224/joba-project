@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import posts, applications
+from routers import posts, applications, post_questions, auth
 from database import Base, engine
 from datetime import datetime
 
@@ -21,6 +21,8 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(posts.router)
 app.include_router(applications.router)
+app.include_router(post_questions.router)
+app.include_router(auth.router)
 
 # DB 테이블 생성
 @app.on_event("startup")

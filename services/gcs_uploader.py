@@ -18,14 +18,11 @@ except Exception as e:
 project_id = settings.GCP_PROJECT_ID
 bucket_name = settings.GCS_BUCKET_NAME
 
-# 파일 크기 제한 (100MB)
-MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB in bytes
+# 파일 크기 제한 (1GB)
+MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB in bytes
 
-def validate_pdf_file(file: UploadFile) -> None:
-    """PDF 파일 유효성 검사"""
-    if not file.content_type or file.content_type != "application/pdf":
-        raise HTTPException(status_code=400, detail="PDF 파일만 업로드 가능합니다.")
-    
+def validate_file_size(file: UploadFile) -> None:
+    """파일 크기 검사"""
     # 파일 크기 검사
     file.file.seek(0, 2)  # 파일 끝으로 이동
     file_size = file.file.tell()
@@ -34,7 +31,7 @@ def validate_pdf_file(file: UploadFile) -> None:
     if file_size > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=400, 
-            detail=f"파일 크기가 너무 큽니다. 최대 {MAX_FILE_SIZE // (1024*1024)}MB까지 업로드 가능합니다."
+            detail=f"파일 크기가 너무 큽니다. 최대 {MAX_FILE_SIZE // (1024*1024*1024)}GB까지 업로드 가능합니다."
         )
 
 def upload_file_to_gcs(file_object: UploadFile, destination_blob_name: str) -> str:

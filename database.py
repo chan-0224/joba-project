@@ -28,24 +28,64 @@ class Post(Base):
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
     views = Column(Integer, nullable=False, default=0)
 
+class PostQuestion(Base):
+    __tablename__ = "post_questions"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    question_type = Column(String(50), nullable=False)  # TEXT_BOX, LINK, ATTACHMENT, CHOICES
+    question_content = Column(Text, nullable=False)
+    is_required = Column(Boolean, nullable=False, default=False)
+    choices = Column(JSONB, nullable=True)  # CHOICES 타입일 때만 사용
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+
 class Application(Base):
     __tablename__ = "applications"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
     applicant_id = Column(Integer, nullable=False)
-    motivation = Column(Text, nullable=False)
-    most_memorable_project = Column(Text, nullable=False)
-    portfolio_pdf_url = Column(String(255), nullable=False)
-    meeting_available_time = Column(JSONB, nullable=False)
-    aspirations = Column(Text, nullable=False)
+    status = Column(String(50), nullable=False, default="제출됨")
     created_at = Column(DateTime, nullable=False, server_default=func.now())
-    status = Column(String(20), nullable=False, default="제출됨")
+    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
     # 중복 지원 방지 (같은 applicant_id가 같은 post_id에 중복 지원 불가)
     __table_args__ = (
         UniqueConstraint('applicant_id', 'post_id', name='unique_applicant_post'),
     )
+
+class ApplicationAnswer(Base):
+    __tablename__ = "application_answers"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    application_id = Column(Integer, ForeignKey("applications.id"), nullable=False)
+    post_question_id = Column(Integer, ForeignKey("post_questions.id"), nullable=False)
+    answer_content = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    kakao_id = Column(String, unique=True, nullable=True)
+    naver_id = Column(String, unique=True, nullable=True)
+    google_id = Column(String, unique=True, nullable=True)
+
+    email = Column(String, unique=True, nullable=True)
+
+    # 온보딩에 필요한 정보들
+    nickname = Column(String, nullable=True)
+    track = Column(String, nullable=True)
+    school = Column(String, nullable=True)
+    portfolio_url = Column(Text, nullable=True)
+
+    is_onboarded = Column(Boolean, nullable=False, default=False)
+
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
 # DB 세션 의존성
 from typing import Generator
