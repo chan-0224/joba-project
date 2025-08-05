@@ -46,7 +46,6 @@ class MeetingTime(BaseModel):
         }
 
 class PostCreate(BaseModel):
-    user_id: int
     title: str = Field(..., max_length=255)
     description: str
     recruitment_field: RecruitmentFieldEnum
@@ -124,14 +123,12 @@ class ApplicationAnswerCreate(BaseModel):
 
 class ApplicationCreate(BaseModel):
     post_id: int
-    applicant_id: int
     answers: List[ApplicationAnswerCreate]
 
     class Config:
         json_schema_extra = {
             "example": {
                 "post_id": 1,
-                "applicant_id": 123,
                 "answers": [
                     {
                         "post_question_id": 1,

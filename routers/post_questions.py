@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from database import get_db, Post, PostQuestion
+from database import get_db, Post, PostQuestion, User
 from schemas import PostQuestionsRequest, PostQuestionResponse, PostQuestionCreate
+from routers.auth import get_current_user
 from sqlalchemy import and_
 
 router = APIRouter()
@@ -11,10 +12,11 @@ router = APIRouter()
 async def create_post_questions(
     post_id: int,
     questions_request: PostQuestionsRequest,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    공고에 대한 커스터마이징 질문들을 생성합니다.
+    공고에 대한 커스터마이징 질문들을 생성합니다. (공고 작성자만 가능)
     """
     # 공고가 존재하는지 확인
     post = db.query(Post).filter(Post.id == post_id).first()
@@ -22,6 +24,13 @@ async def create_post_questions(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="공고를 찾을 수 없습니다."
+        )
+    
+    # 공고 작성자인지 확인
+    if post.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="공고 작성자만 질문을 설정할 수 있습니다."
         )
     
     # 기존 질문들 삭제 (덮어쓰기 방식)

@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from database import get_db, Post
+from database import get_db, Post, User
 from schemas import PostCreate, PostResponse, PostListResponse, RecruitmentFieldEnum, RecruitmentHeadcountEnum, PostOptionsResponse, SortEnum
 from services.gcs_uploader import upload_file_to_gcs, generate_unique_blob_name
+from routers.auth import get_current_user
 import logging
 from sqlalchemy import or_, func
 from datetime import datetime
@@ -14,6 +15,7 @@ router = APIRouter()
 def create_post(
     post_data: PostCreate = Depends(),
     image_file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     # 이미지 파일 유효성 검사
@@ -32,7 +34,7 @@ def create_post(
     # DB 저장
     try:
         post = Post(
-            user_id=post_data.user_id,
+            user_id=current_user.id,  # 실제 인증된 사용자 ID 사용
             image_url=image_url,
             title=post_data.title,
             description=post_data.description,

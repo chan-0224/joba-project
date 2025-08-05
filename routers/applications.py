@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Form
 from sqlalchemy.orm import Session
-from database import get_db, Application, Post, PostQuestion, ApplicationAnswer
+from database import get_db, Application, Post, PostQuestion, ApplicationAnswer, User
 from schemas import ApplicationCreate, ApplicationResponse, ApplicationAnswerCreate
 from services.gcs_uploader import upload_file_to_gcs, generate_portfolio_blob_name
+from routers.auth import get_current_user
 import logging
 from datetime import datetime
 from typing import Optional, List
@@ -14,6 +15,7 @@ router = APIRouter()
 async def create_application(
     application_data: ApplicationCreate,
     portfolio_files: Optional[List[UploadFile]] = File(None, description="첨부파일 타입 질문에 대한 파일들"),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -30,7 +32,7 @@ async def create_application(
         
         # 2. 중복 지원 확인
         existing_application = db.query(Application).filter(
-            Application.applicant_id == application_data.applicant_id,
+            Application.applicant_id == current_user.id,  # 실제 인증된 사용자 ID 사용
             Application.post_id == application_data.post_id
         ).first()
         
@@ -97,7 +99,7 @@ async def create_application(
         # 7. 지원서 생성
         application = Application(
             post_id=application_data.post_id,
-            applicant_id=application_data.applicant_id,
+            applicant_id=current_user.id,  # 실제 인증된 사용자 ID 사용
             status="제출됨"
         )
         
@@ -159,12 +161,17 @@ async def create_application(
 @router.get("/applications/{application_id}", response_model=ApplicationResponse)
 async def get_application(
     application_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    지원서 상세 조회
+    지원서 상세 조회 (본인의 지원서만 조회 가능)
     """
-    application = db.query(Application).filter(Application.id == application_id).first()
+    application = db.query(Application).filter(
+        Application.id == application_id,
+        Application.applicant_id == current_user.id  # 본인의 지원서만 조회 가능
+    ).first()
+    
     if not application:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
