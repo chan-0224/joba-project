@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, func, ForeignKey, UniqueConstraint
+from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, func, ForeignKey, UniqueConstraint, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from config import settings
@@ -14,78 +14,121 @@ class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=False, index=True)  # 인덱스 추가
     image_url = Column(String(255), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
-    recruitment_field = Column(String(50), nullable=False)
+    recruitment_field = Column(String(50), nullable=False, index=True)  # 인덱스 추가
     recruitment_headcount = Column(String(50), nullable=False)
-    school_specific = Column(Boolean, nullable=False)
+    school_specific = Column(Boolean, nullable=False, index=True)  # 인덱스 추가
     target_school_name = Column(String(100), nullable=True)
-    deadline = Column(DateTime, nullable=False)
+    deadline = Column(DateTime, nullable=False, index=True)  # 인덱스 추가
     external_link = Column(String(255), nullable=True)
-    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)  # 인덱스 추가
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
-    views = Column(Integer, nullable=False, default=0)
+    views = Column(Integer, nullable=False, default=0, index=True)  # 인덱스 추가
+
+    # 복합 인덱스 추가
+    __table_args__ = (
+        Index('idx_posts_user_created', 'user_id', 'created_at'),
+        Index('idx_posts_field_deadline', 'recruitment_field', 'deadline'),
+    )
 
 class PostQuestion(Base):
     __tablename__ = "post_questions"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
-    question_type = Column(String(50), nullable=False)  # TEXT_BOX, LINK, ATTACHMENT, CHOICES
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False, index=True)  # 인덱스 추가
+    question_type = Column(String(50), nullable=False, index=True)  # 인덱스 추가
     question_content = Column(Text, nullable=False)
-    is_required = Column(Boolean, nullable=False, default=False)
-    choices = Column(JSONB, nullable=True)  # CHOICES 타입일 때만 사용
+    is_required = Column(Boolean, nullable=False, default=False, index=True)  # 인덱스 추가
+    choices = Column(JSONB, nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+
+    # 복합 인덱스 추가
+    __table_args__ = (
+        Index('idx_post_questions_post_type', 'post_id', 'question_type'),
+        Index('idx_post_questions_post_required', 'post_id', 'is_required'),
+    )
 
 class Application(Base):
     __tablename__ = "applications"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
-    applicant_id = Column(Integer, nullable=False)
-    status = Column(String(50), nullable=False, default="제출됨")
-    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False, index=True)  # 인덱스 추가
+    applicant_id = Column(Integer, nullable=False, index=True)  # 인덱스 추가
+    status = Column(String(50), nullable=False, default="제출됨", index=True)  # 인덱스 추가
+    created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)  # 인덱스 추가
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
     # 중복 지원 방지 (같은 applicant_id가 같은 post_id에 중복 지원 불가)
     __table_args__ = (
         UniqueConstraint('applicant_id', 'post_id', name='unique_applicant_post'),
+        Index('idx_applications_post_status', 'post_id', 'status'),
+        Index('idx_applications_applicant_created', 'applicant_id', 'created_at'),
     )
 
 class ApplicationAnswer(Base):
     __tablename__ = "application_answers"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    application_id = Column(Integer, ForeignKey("applications.id"), nullable=False)
-    post_question_id = Column(Integer, ForeignKey("post_questions.id"), nullable=False)
+    application_id = Column(Integer, ForeignKey("applications.id"), nullable=False, index=True)  # 인덱스 추가
+    post_question_id = Column(Integer, ForeignKey("post_questions.id"), nullable=False, index=True)  # 인덱스 추가
     answer_content = Column(Text, nullable=False)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+
+    # 복합 인덱스 추가
+    __table_args__ = (
+        Index('idx_application_answers_application', 'application_id'),
+        Index('idx_application_answers_question', 'post_question_id'),
+    )
+
+class ApplicationStatusLog(Base):
+    __tablename__ = "application_status_logs"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    application_id = Column(Integer, ForeignKey("applications.id"), nullable=False, index=True)
+    previous_status = Column(String(50), nullable=False)
+    new_status = Column(String(50), nullable=False)
+    changed_by_user_id = Column(Integer, nullable=False, index=True)  # 상태를 변경한 사용자 ID
+    change_reason = Column(Text, nullable=True)  # 변경 사유 (선택사항)
+    created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
+
+    # 복합 인덱스 추가
+    __table_args__ = (
+        Index('idx_status_logs_application_created', 'application_id', 'created_at'),
+        Index('idx_status_logs_changed_by', 'changed_by_user_id', 'created_at'),
+    )
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    kakao_id = Column(String, unique=True, nullable=True)
-    naver_id = Column(String, unique=True, nullable=True)
-    google_id = Column(String, unique=True, nullable=True)
+    kakao_id = Column(String, unique=True, nullable=True, index=True)  # 인덱스 추가
+    naver_id = Column(String, unique=True, nullable=True, index=True)  # 인덱스 추가
+    google_id = Column(String, unique=True, nullable=True, index=True)  # 인덱스 추가
 
-    email = Column(String, unique=True, nullable=True)
+    email = Column(String, unique=True, nullable=True, index=True)  # 인덱스 추가
 
     # 온보딩에 필요한 정보들
-    nickname = Column(String, nullable=True)
-    track = Column(String, nullable=True)
-    school = Column(String, nullable=True)
+    nickname = Column(String, nullable=True, index=True)  # 인덱스 추가
+    track = Column(String, nullable=True, index=True)  # 인덱스 추가
+    school = Column(String, nullable=True, index=True)  # 인덱스 추가
     portfolio_url = Column(Text, nullable=True)
 
-    is_onboarded = Column(Boolean, nullable=False, default=False)
+    is_onboarded = Column(Boolean, nullable=False, default=False, index=True)  # 인덱스 추가
 
-    created_at = Column(DateTime, server_default=func.now())
+    created_at = Column(DateTime, server_default=func.now(), index=True)  # 인덱스 추가
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    # 복합 인덱스 추가
+    __table_args__ = (
+        Index('idx_users_track_onboarded', 'track', 'is_onboarded'),
+        Index('idx_users_school_onboarded', 'school', 'is_onboarded'),
+    )
 
 # DB 세션 의존성
 from typing import Generator

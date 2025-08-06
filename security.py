@@ -1,21 +1,40 @@
 # security.py
 import os
-from datetime import datetime, timedelta, timezone
-from jose import jwt
+import jwt
+from datetime import datetime, timedelta
+from typing import Optional
+from config import settings
 
-SECRET_KEY = os.getenv("JWT_SECRET", "change_me")
-ALGO = "HS256"
+# JWT 시크릿 키 - 환경변수에서 가져오며, 없으면 에러 발생
+SECRET_KEY = os.getenv("JWT_SECRET")
+if not SECRET_KEY:
+    raise ValueError("JWT_SECRET 환경변수가 설정되지 않았습니다.")
 
-def _utcnow():
-    return datetime.now(timezone.utc)
+ALGORITHM = "HS256"
 
-def create_access_token(data: dict, minutes: int = 60*24*14) -> str:
-    payload = data | {"iat": _utcnow(), "exp": _utcnow() + timedelta(minutes=minutes), "typ": "access"}
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGO)
+def create_access_token(data: dict, minutes: int = None) -> str:
+    if minutes is None:
+        minutes = settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+    
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=minutes)
+    to_encode.update({"exp": expire, "typ": "access"})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
-def create_signup_token(data: dict, minutes: int = 15) -> str:
-    payload = data | {"iat": _utcnow(), "exp": _utcnow() + timedelta(minutes=minutes), "typ": "signup"}
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGO)
+def create_signup_token(data: dict, minutes: int = None) -> str:
+    if minutes is None:
+        minutes = settings.JWT_SIGNUP_TOKEN_EXPIRE_MINUTES
+    
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=minutes)
+    to_encode.update({"exp": expire, "typ": "signup"})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
-def decode_token(token: str) -> dict:
-    return jwt.decode(token, SECRET_KEY, algorithms=[ALGO]) 
+def decode_token(token: str) -> Optional[dict]:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except jwt.PyJWTError:
+        return None 

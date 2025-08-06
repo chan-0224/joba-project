@@ -7,31 +7,23 @@ import uuid
 import os
 import logging
 
-# GCP 인증 정보 설정
+# GCP 서비스 계정 키 로딩
 try:
-    service_account_info = json.loads(settings.GCP_SERVICE_ACCOUNT_KEY_JSON)
+    service_account_info = eval(settings.GCP_SERVICE_ACCOUNT_KEY_JSON)
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
+    storage_client = storage.Client(credentials=credentials, project=settings.GCP_PROJECT_ID)
 except Exception as e:
     logging.error("GCP 서비스 계정 키 로딩 실패: %s", e)
-    credentials = None
+    raise HTTPException(status_code=500, detail="GCP 설정 오류")
 
-project_id = settings.GCP_PROJECT_ID
-bucket_name = settings.GCS_BUCKET_NAME
-
-# 파일 크기 제한 (1GB)
-MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB in bytes
+bucket = storage_client.bucket(settings.GCS_BUCKET_NAME)
 
 def validate_file_size(file: UploadFile) -> None:
-    """파일 크기 검사"""
-    # 파일 크기 검사
-    file.file.seek(0, 2)  # 파일 끝으로 이동
-    file_size = file.file.tell()
-    file.file.seek(0)  # 파일 시작으로 복원
-    
-    if file_size > MAX_FILE_SIZE:
+    """파일 크기 검증"""
+    if file.size and file.size > settings.MAX_FILE_SIZE_BYTES:
         raise HTTPException(
-            status_code=400, 
-            detail=f"파일 크기가 너무 큽니다. 최대 {MAX_FILE_SIZE // (1024*1024*1024)}GB까지 업로드 가능합니다."
+            status_code=400,
+            detail=f"파일 크기가 너무 큽니다. 최대 {settings.MAX_FILE_SIZE_BYTES // (1024*1024*1024)}GB까지 업로드 가능합니다."
         )
 
 def upload_file_to_gcs(file_object: UploadFile, destination_blob_name: str) -> str:

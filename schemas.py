@@ -27,6 +27,11 @@ class ApplicationStatusEnum(str, Enum):
     ACCEPTED = "합격"
     REJECTED = "불합격"
 
+class ApplicationSortEnum(str, Enum):
+    CREATED_AT_DESC = "최신순"
+    CREATED_AT_ASC = "오래된순"
+    STATUS = "상태순"
+
 class QuestionTypeEnum(str, Enum):
     TEXT_BOX = "TEXT_BOX"
     LINK = "LINK"
@@ -157,4 +162,52 @@ class ApplicationAnswerResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+# 지원자 관리 기능을 위한 새로운 스키마들
+class ApplicationListItem(BaseModel):
+    application_id: int
+    applicant_id: int
+    applicant_nickname: str
+    status: str
+    submitted_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ApplicationListResponse(BaseModel):
+    total_count: int
+    applications: List[ApplicationListItem]
+    page: int
+    size: int
+
+class ApplicationDetailResponse(BaseModel):
+    application_id: int
+    applicant_id: int
+    applicant_nickname: str
+    status: str
+    submitted_at: datetime
+    questions: List[Dict[str, Any]]
+
+    class Config:
+        from_attributes = True
+
+class ApplicationStatusUpdate(BaseModel):
+    new_status: ApplicationStatusEnum
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "new_status": "합격"
+            }
+        }
+
+class ApplicationStatusResponse(BaseModel):
+    application_id: int
+    status: str
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+ 

@@ -1,11 +1,12 @@
 fastapi
 uvicorn[standard]
-SQLAlchemy
+sqlalchemy
+asyncpg
 python-dotenv
 google-cloud-storage
-pydantic-settings 
-cryptography
+pydantic-settings
 python-multipart
-psycopg2-binary
 httpx
 python-jose
+PyJWT
+slowapi

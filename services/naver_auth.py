@@ -1,12 +1,14 @@
 import os
 import httpx
+import secrets
 
 NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID")
 NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
 NAVER_REDIRECT_URI = os.getenv("NAVER_REDIRECT_URI")
+NAVER_STATE = os.getenv("NAVER_STATE", secrets.token_urlsafe(32))
 
 def get_login_url():
-    state = "naver_random_state"  # 간단한 CSRF 방지용
+    state = NAVER_STATE
     return (
         f"https://nid.naver.com/oauth2.0/authorize"
         f"?response_type=code"
