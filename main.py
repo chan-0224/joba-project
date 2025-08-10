@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -51,11 +51,11 @@ def on_startup():
 # 서버 슬립 방지를 위한 핑 엔드포인트
 @app.get("/ping")
 @limiter.limit("100/minute")
-def ping():
+def ping(request: Request):
     return {"message": "pong"}
 
 # 헬스체크 엔드포인트
 @app.get("/health")
 @limiter.limit("50/minute")
-def health_check():
+def health_check(request: Request):
     return {"status": "healthy", "version": "1.0.0"}
