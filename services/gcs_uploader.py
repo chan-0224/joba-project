@@ -30,13 +30,11 @@ def upload_file_to_gcs(file_object: UploadFile, destination_blob_name: str) -> s
     if credentials is None:
         raise Exception("GCP 인증 정보가 올바르지 않습니다.")
     try:
-        client = storage.Client(credentials=credentials, project=project_id)
-        bucket = client.bucket(bucket_name)
         blob = bucket.blob(destination_blob_name)
         
         # 파일 업로드
         blob.upload_from_file(file_object.file, content_type=file_object.content_type)
-        return f"https://storage.googleapis.com/{bucket_name}/{destination_blob_name}"
+        return f"https://storage.googleapis.com/{settings.GCS_BUCKET_NAME}/{destination_blob_name}"
     except Exception as e:
         logging.error("GCS 파일 업로드 실패: %s", e)
         raise
