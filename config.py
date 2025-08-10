@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
@@ -34,7 +35,7 @@ class Settings(BaseSettings):
     NAVER_CLIENT_ID: str
     NAVER_CLIENT_SECRET: str
     NAVER_REDIRECT_URI: str
-    NAVER_STATE: str = None  # 환경변수에서 가져오거나 랜덤 생성
+    NAVER_STATE: Optional[str] = None  # 환경변수에서 가져오거나 랜덤 생성
     
     # 소셜 로그인 설정 - Google
     GOOGLE_CLIENT_ID: str
