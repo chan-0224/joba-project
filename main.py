@@ -50,12 +50,14 @@ def on_startup():
 
 # 서버 슬립 방지를 위한 핑 엔드포인트
 @app.get("/ping")
+@app.head("/ping")
 @limiter.limit("100/minute")
 def ping(request: Request):
     return {"message": "pong"}
 
 # 헬스체크 엔드포인트
 @app.get("/health")
+@app.head("/health")
 @limiter.limit("50/minute")
 def health_check(request: Request):
     return {"status": "healthy", "version": "1.0.0"}
