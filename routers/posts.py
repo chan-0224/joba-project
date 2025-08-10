@@ -7,12 +7,12 @@
 
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from database import get_db, Post, User
+from database import get_db, Post, User, Application
 from schemas import PostCreate, PostResponse, PostListResponse, RecruitmentFieldEnum, RecruitmentHeadcountEnum, PostOptionsResponse, SortEnum
 from services.gcs_uploader import upload_file_to_gcs, generate_unique_blob_name
 from routers.auth import get_current_user
 import logging
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, select
 from datetime import datetime
 from typing import Optional
 
@@ -150,7 +150,9 @@ async def list_posts(
     if sort == SortEnum.LATEST:
         query = query.order_by(Post.created_at.desc())
     elif sort == SortEnum.POPULAR:
-        query = query.order_by(Post.views.desc(), Post.created_at.desc())
+        # 지원자 수를 계산하는 서브쿼리
+        application_count = select(func.count(Application.id)).where(Application.post_id == Post.id).scalar_subquery()
+        query = query.order_by(application_count.desc(), Post.created_at.desc())
     elif sort == SortEnum.RANDOM:
         query = query.order_by(func.random())
     
