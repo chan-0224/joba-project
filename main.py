@@ -24,7 +24,11 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 프로덕션에서는 특정 도메인으로 제한해야 함
+    allow_origins=[
+        "http://localhost:5173",  # 로컬 개발용
+        "http://localhost:3000",  # 다른 로컬 포트도 추가
+        "http://localhost:8080",  # 추가 로컬 포트
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
