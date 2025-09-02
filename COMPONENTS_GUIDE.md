@@ -49,9 +49,9 @@ RANDOM = "랜덤순"           # 랜덤으로 정렬
 
 ```python
 SUBMITTED = "제출됨"        # 지원서 제출 완료
-REVIEWED = "열람됨"         # 모집자가 지원서를 열람함
 ACCEPTED = "합격"           # 최종 합격
 REJECTED = "불합격"         # 최종 불합격
+CANCELLED = "취소됨"        # 지원자가 취소함
 ```
 
 ### 📊 ApplicationSortEnum (지원서 정렬)
@@ -234,7 +234,7 @@ CHOICES = "CHOICES"         # 선택지 중 하나 선택
 **기능**: 회원가입 시 사용하는 폼 모델
 - `signup_token`: 회원가입 토큰
 - `nickname`: 닉네임
-- `track`: 트랙 (frontend, backend, plan, design, data)
+- `track`: 트랙 (프론트엔드, 백엔드, 기획, 디자인, 데이터 분석)
 - `school`: 학교명
 - `portfolio_url`: 포트폴리오 URL (선택사항)
 
@@ -270,7 +270,8 @@ POST /v1/applications              # 지원서 제출
 GET  /v1/applications/{id}         # 지원서 조회 (본인)
 GET  /v1/posts/{post_id}/applications # 지원자 목록 조회 (모집자)
 GET  /v1/applications/{id}/detail  # 지원서 상세 조회
-PATCH /v1/applications/{id}/status # 지원서 상태 변경
+PATCH /v1/applications/{id}/status # 지원서 상태 변경 (모집자)
+PATCH /v1/applications/{id}/cancel # 지원서 취소 (지원자)
 ```
 
 ### 🏥 헬스체크

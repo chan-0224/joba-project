@@ -56,7 +56,7 @@
   {
     "signup_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
     "nickname": "홍길동",
-    "track": "frontend",
+    "track": "프론트엔드",
     "school": "서울대학교",
     "portfolio_url": "https://portfolio.com"
   }
@@ -78,7 +78,7 @@
     "id": 123,
     "email": "user@example.com",
     "nickname": "홍길동",
-    "track": "frontend",
+    "track": "프론트엔드",
     "is_onboarded": true
   }
   ```
@@ -99,7 +99,7 @@
   - `recruitment_headcount`: 모집 인원
   - `school_specific`: 학교 특정 여부 (boolean)
   - `target_school_name`: 대상 학교명
-  - `deadline`: 마감일 (ISO 8601)
+  - `deadline`: 마감일 (ISO 8601, UTC 기준)
   - `external_link`: 외부 링크 (선택사항)
 
 - **응답**:
@@ -254,7 +254,7 @@
 - **Content-Type**: `multipart/form-data`
 - **헤더**: `Authorization: Bearer {access_token}`
 - **요청 바디**:
-  - `application_data`: JSON 문자열
+  - `application_data`: JSON 문자열 (Form 필드)
     ```json
     {
       "post_id": 1,
@@ -383,11 +383,26 @@
   }
   ```
 
+### 4. 지원서 취소 (지원자 본인만)
+- **URL**: `PATCH /v1/applications/{application_id}/cancel`
+- **헤더**: `Authorization: Bearer {access_token}`
+- **응답**:
+  ```json
+  {
+    "application_id": 1,
+    "status": "취소됨",
+    "updated_at": "2024-07-25T15:30:00Z"
+  }
+  ```
+
 
 
 ---
 
 ## 🔧 공통 사항
+
+### 응답 형식
+API는 직접 데이터를 반환합니다. 공통 래퍼 없이 요청된 리소스의 데이터를 그대로 반환합니다.
 
 ### 인증 헤더
 모든 인증이 필요한 API에서 사용:
@@ -399,6 +414,7 @@ Authorization: Bearer {access_token}
 - **파일 크기 제한**: 1GB
 - **지원 파일 형식**: 제한 없음
 - **Content-Type**: `multipart/form-data`
+- **이미지 파일 검증**: 공고 이미지 업로드 시 `image/` MIME 타입 검증
 
 ### 상태 코드
 - `200`: 성공
@@ -409,11 +425,22 @@ Authorization: Bearer {access_token}
 - `404`: 리소스 없음 (공고, 지원서를 찾을 수 없음)
 - `500`: 서버 오류
 
+### 주요 에러 메시지
+- `"공고를 찾을 수 없습니다."`
+- `"지원서를 찾을 수 없습니다."`
+- `"이미 지원한 공고입니다."`
+- `"이 공고에는 질문이 설정되지 않았습니다."`
+- `"다음 필수 질문에 답변해주세요: [질문 목록]"`
+- `"파일 크기는 1GB를 초과할 수 없습니다: [파일명]"`
+- `"이미지 파일만 업로드 가능합니다."`
+- `"권한이 없습니다."`
+- `"이미 최종 결정이 완료된 지원서입니다."`
+
 ### 지원서 상태
 - `"제출됨"`: 지원서 제출 완료
-- `"열람됨"`: 모집자가 열람함 (자동 변경)
 - `"합격"`: 최종 합격
 - `"불합격"`: 최종 불합격
+- `"취소됨"`: 지원자가 취소함
 
 ### 질문 타입
 - `"TEXT_BOX"`: 텍스트 입력
@@ -422,10 +449,10 @@ Authorization: Bearer {access_token}
 - `"CHOICES"`: 선택지 중 하나 선택
 
 ### 트랙 타입
-- `"frontend"`: 프론트엔드
-- `"backend"`: 백엔드
-- `"plan"`: 기획
-- `"design"`: 디자인
-- `"data"`: 데이터 분석
+- `"프론트엔드"`: 프론트엔드
+- `"백엔드"`: 백엔드
+- `"기획"`: 기획
+- `"디자인"`: 디자인
+- `"데이터 분석"`: 데이터 분석
 
 이 명세서를 참고하여 프론트엔드 개발을 진행하시면 됩니다! 🚀 

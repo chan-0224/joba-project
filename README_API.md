@@ -53,7 +53,7 @@ POST /v1/auth/signup
 {
   "signup_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
   "nickname": "홍길동",
-  "track": "frontend",
+  "track": "프론트엔드",
   "school": "서울대학교",
   "portfolio_url": "https://portfolio.com"
 }
@@ -226,8 +226,8 @@ Content-Type: multipart/form-data
 ```
 
 **요청 파라미터:**
-- `application_data`: JSON 형태의 지원서 데이터
-- `portfolio_files`: 첨부파일 (선택)
+- `application_data`: JSON 형태의 지원서 데이터 (Form 필드)
+- `portfolio_files`: 첨부파일 (선택, ATTACHMENT 타입 질문용)
 
 **application_data 예시:**
 ```json
@@ -317,6 +317,12 @@ Authorization: Bearer <access_token>
       "question_type": "LINK",
       "question_content": "포트폴리오 링크를 남겨주세요.",
       "answer_content": "https://portfolio.com"
+    },
+    {
+      "question_id": 3,
+      "question_type": "CHOICES",
+      "question_content": "선호하는 개발 환경은?",
+      "answer_content": "VS Code"
     }
   ]
 }
@@ -326,6 +332,21 @@ Authorization: Bearer <access_token>
 ```http
 PATCH /v1/applications/{application_id}/status
 Authorization: Bearer <access_token>
+```
+
+### 지원서 취소
+```http
+PATCH /v1/applications/{application_id}/cancel
+Authorization: Bearer <access_token>
+```
+
+**응답 예시:**
+```json
+{
+  "application_id": 1,
+  "status": "취소됨",
+  "updated_at": "2024-07-25T15:30:00Z"
+}
 ```
 
 **요청 본문:**
@@ -373,15 +394,28 @@ GET /health
 }
 ```
 
-**참고**: 두 엔드포인트 모두 HEAD 요청도 지원하여 UptimeRobot 등 모니터링 도구에서 사용 가능합니다.
+**참고**: 
+- 두 엔드포인트 모두 HEAD 요청도 지원하여 UptimeRobot 등 모니터링 도구에서 사용 가능합니다.
+- 모든 시간은 UTC 기준으로 반환됩니다.
 
 ## 📊 공통 응답 형식
 
 ### 성공 응답
+API는 직접 데이터를 반환합니다. 공통 래퍼 없이 요청된 리소스의 데이터를 그대로 반환합니다.
+
+**예시:**
 ```json
+// 공고 목록 조회 응답
 {
-  "data": "응답 데이터",
-  "message": "성공 메시지"
+  "total_count": 25,
+  "posts": [...]
+}
+
+// 사용자 정보 조회 응답
+{
+  "id": 123,
+  "email": "user@example.com",
+  "nickname": "홍길동"
 }
 ```
 
@@ -407,20 +441,27 @@ GET /health
 - `"공고를 찾을 수 없습니다."`
 - `"지원서를 찾을 수 없습니다."`
 - `"이미 지원한 공고입니다."`
-- `"필수 질문에 답변해주세요."`
-- `"파일 크기가 너무 큽니다."`
-- `"권한이 없습니다."`
+- `"이 공고에는 질문이 설정되지 않았습니다."`
+- `"다음 필수 질문에 답변해주세요: [질문 목록]"`
+- `"유효하지 않은 질문 ID가 포함되어 있습니다: [ID 목록]"`
+- `"파일 크기는 1GB를 초과할 수 없습니다: [파일명]"`
+- `"이미지 파일만 업로드 가능합니다."`
+- `"이 공고의 지원자 목록을 조회할 권한이 없습니다."`
+- `"이 지원서를 조회할 권한이 없습니다."`
+- `"이 지원서의 상태를 변경할 권한이 없습니다."`
 - `"이미 최종 결정이 완료된 지원서입니다."`
+- `"CHOICES 타입 질문에는 선택지가 필요합니다."`
 
 ### 파일 업로드 제한
 - 최대 1GB까지 업로드 가능
 - 파일 형식 제한 없음
+- 이미지 파일 업로드 시 `image/` MIME 타입 검증
 
 ### 지원서 상태
 - `"제출됨"`: 지원서 제출 완료
-- `"열람됨"`: 모집자가 열람함 (자동 변경)
 - `"합격"`: 최종 합격
 - `"불합격"`: 최종 불합격
+- `"취소됨"`: 지원자가 취소함
 
 ### 정렬 옵션
 - `"최신순"`: 최근 제출순
@@ -441,4 +482,6 @@ GET /health
 
 ### 상태 변경 제한
 - `"합격"` 또는 `"불합격"` 상태는 재변경 불가
-- 최종 결정 후 추가 변경 시도 시 에러 반환 
+- 최종 결정 후 추가 변경 시도 시 에러 반환
+- `"취소됨"` 상태는 재변경 불가
+- 모든 상태 변경은 `application_status_logs` 테이블에 감사 로그 기록 

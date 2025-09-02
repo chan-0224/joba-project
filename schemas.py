@@ -23,9 +23,9 @@ class SortEnum(str, Enum):
 
 class ApplicationStatusEnum(str, Enum):
     SUBMITTED = "제출됨"
-    REVIEWED = "열람됨"
     ACCEPTED = "합격"
     REJECTED = "불합격"
+    CANCELLED = "취소됨"
 
 class ApplicationSortEnum(str, Enum):
     CREATED_AT_DESC = "최신순"

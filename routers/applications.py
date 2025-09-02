@@ -378,19 +378,15 @@ async def get_application_detail(
         }
         questions.append(question_data)
     
-    # 6. 모집자가 조회한 경우 자동으로 "열람됨" 상태로 변경
-    if post.user_id == current_user.id and application.status == "제출됨":
-        previous_status = application.status
-        application.status = "열람됨"
-        application.updated_at = datetime.utcnow()
-        
+    # 6. 모집자가 조회한 경우 감사 로그만 기록 (상태 변경 없음)
+    if post.user_id == current_user.id:
         # 감사 로그 기록
         status_log = ApplicationStatusLog(
             application_id=application.id,
-            previous_status=previous_status,
-            new_status="열람됨",
+            previous_status=application.status,
+            new_status=application.status,
             changed_by_user_id=current_user.id,
-            change_reason="자동 열람"
+            change_reason="상세 조회"
         )
         db.add(status_log)
         db.commit()
@@ -469,6 +465,73 @@ async def update_application_status(
         previous_status=previous_status,
         new_status=status_update.new_status,
         changed_by_user_id=current_user.id
+    )
+    db.add(status_log)
+    db.commit()
+    
+    return ApplicationStatusResponse(
+        application_id=application.id,
+        status=application.status,
+        updated_at=application.updated_at
+    )
+
+
+@router.patch("/applications/{application_id}/cancel", response_model=ApplicationStatusResponse)
+async def cancel_application(
+    application_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    지원서 취소 (지원자 본인만 가능)
+    
+    "제출됨" 상태일 때만 취소할 수 있습니다.
+    
+    Args:
+        application_id: 취소할 지원서 ID
+        current_user: 현재 인증된 사용자
+        db: 데이터베이스 세션
+        
+    Returns:
+        ApplicationStatusResponse: 취소된 지원서 상태 정보
+        
+    Raises:
+        HTTPException: 지원서 없음, 권한 없음, 취소 불가능한 상태
+    """
+    # 1. 지원서 존재 여부 확인
+    application = db.query(Application).filter(Application.id == application_id).first()
+    if not application:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="지원서를 찾을 수 없습니다."
+        )
+    
+    # 2. 권한 검증 - 지원자 본인만 취소 가능
+    if application.applicant_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="본인의 지원서만 취소할 수 있습니다."
+        )
+    
+    # 3. 취소 가능 상태 확인
+    if application.status != "제출됨":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="이미 처리된 지원서는 취소할 수 없습니다."
+        )
+    
+    # 4. 지원서 취소
+    previous_status = application.status
+    application.status = "취소됨"
+    application.updated_at = datetime.utcnow()
+    
+    # 5. 감사 로그 기록
+    status_log = ApplicationStatusLog(
+        application_id=application.id,
+        previous_status=previous_status,
+        new_status="취소됨",
+        changed_by_user_id=current_user.id,
+        change_reason="지원자 취소"
     )
     db.add(status_log)
     db.commit()
