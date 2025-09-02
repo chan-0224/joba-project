@@ -19,6 +19,15 @@
 - **인증 방식**: JWT Bearer Token
 - **Content-Type**: `application/json` (파일 업로드 시 `multipart/form-data`)
 
+### CORS 설정
+- **허용된 오리진**: 
+  - `http://localhost:5173` (Vite 기본 포트)
+  - `http://localhost:3000` (React 기본 포트)
+  - `http://localhost:8080` (추가 로컬 포트)
+- **허용된 메서드**: 모든 HTTP 메서드
+- **허용된 헤더**: 모든 헤더
+- **Credentials**: 지원 (쿠키/인증 헤더 허용)
+
 ---
 
 ## 🔐 인증 시스템
@@ -29,6 +38,8 @@
 - **카카오 로그인**: `GET /v1/auth/login/kakao`
 - **네이버 로그인**: `GET /v1/auth/login/naver`
 - **구글 로그인**: `GET /v1/auth/login/google`
+
+**중요**: 모든 API 경로는 `/v1` prefix를 포함해야 합니다!
 
 #### 2. 콜백 처리
 - **URL**: `GET /v1/auth/{provider}/callback?code={code}`

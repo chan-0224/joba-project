@@ -1,14 +1,44 @@
 # JOBA Backend API 문서
 
 ## 📋 목차
-1. [인증 API](#인증-api)
-2. [공고 관리 API](#공고-관리-api)
-3. [커스텀 질문 API](#커스터마이징-질문-api)
-4. [지원서 API](#지원서-api)
-5. [지원자 관리 API](#지원자-관리-api)
-6. [헬스체크 API](#헬스체크-api)
-7. [공통 응답 형식](#공통-응답-형식)
-8. [에러 코드](#에러-코드)
+1. [개요](#개요)
+2. [인증 API](#인증-api)
+3. [공고 관리 API](#공고-관리-api)
+4. [커스터마이징 질문 API](#커스터마이징-질문-api)
+5. [지원서 API](#지원서-api)
+6. [지원자 관리 API](#지원자-관리-api)
+7. [헬스체크 API](#헬스체크-api)
+8. [공통 응답 형식](#공통-응답-형식)
+9. [에러 코드](#에러-코드)
+
+## 📖 개요
+
+### 서버 정보
+- **Base URL**: `https://joba-project.onrender.com`
+- **API 버전**: `v1`
+- **프레임워크**: FastAPI
+- **데이터베이스**: PostgreSQL (Neon)
+- **파일 저장소**: Google Cloud Storage
+
+### 라우터 구조
+```
+/v1
+├── /auth          # 인증 관련 (소셜 로그인, 회원가입)
+├── /posts         # 공고 관리
+├── /applications  # 지원서 관리
+└── /post_questions # 커스터마이징 질문
+```
+
+### CORS 설정
+- **허용된 오리진**: 
+  - `http://localhost:5173` (Vite)
+  - `http://localhost:3000` (React)
+  - `http://localhost:8080` (추가 포트)
+- **허용된 메서드**: 모든 HTTP 메서드
+- **허용된 헤더**: 모든 헤더
+- **Credentials**: 지원
+
+---
 
 ## 🔐 인증 API
 

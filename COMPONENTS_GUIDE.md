@@ -1,10 +1,51 @@
 # JOBA Backend 컴포넌트 가이드
 
 ## 📋 목차
-1. [Enum 클래스들](#enum-클래스들)
-2. [BaseModel 클래스들](#basemodel-클래스들)
-3. [API 엔드포인트들](#api-엔드포인트들)
-4. [데이터베이스 모델들](#데이터베이스-모델들)
+1. [개요](#개요)
+2. [Enum 클래스들](#enum-클래스들)
+3. [BaseModel 클래스들](#basemodel-클래스들)
+4. [API 엔드포인트들](#api-엔드포인트들)
+5. [데이터베이스 모델들](#데이터베이스-모델들)
+
+---
+
+## 📖 개요
+
+### 프로젝트 구조
+```
+JOBA_BACKEND/
+├── main.py                 # FastAPI 앱 메인 파일
+├── config.py              # 환경변수 및 설정 관리
+├── database.py            # 데이터베이스 연결 및 모델
+├── security.py            # JWT 토큰 관리
+├── schemas.py             # Pydantic 스키마 정의
+├── routers/               # API 라우터들
+│   ├── auth.py           # 인증 관련 (소셜 로그인)
+│   ├── posts.py          # 공고 관리
+│   ├── applications.py   # 지원서 관리
+│   └── post_questions.py # 커스터마이징 질문
+└── services/              # 비즈니스 로직
+    ├── user_service.py   # 사용자 관리 서비스
+    ├── kakao_auth.py     # 카카오 OAuth
+    ├── naver_auth.py     # 네이버 OAuth
+    ├── google_auth.py    # 구글 OAuth
+    └── gcs_uploader.py   # 파일 업로드 서비스
+```
+
+### API 라우터 구조
+```
+/v1
+├── /auth          # 인증 관련 (소셜 로그인, 회원가입)
+├── /posts         # 공고 관리
+├── /applications  # 지원서 관리
+└── /post_questions # 커스터마이징 질문
+```
+
+### 주요 기능
+- **소셜 로그인**: 카카오, 네이버, 구글 OAuth2
+- **JWT 인증**: 액세스 토큰 기반 인증
+- **파일 업로드**: Google Cloud Storage 연동
+- **데이터베이스**: PostgreSQL (Neon) 연동
 
 ---
 
