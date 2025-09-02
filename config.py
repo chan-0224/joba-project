@@ -1,10 +1,8 @@
 import os
 from typing import Optional
 from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
 
-# .env 파일 로드
-load_dotenv()
+# .env 파일 로드 제거 - 서버 환경변수 우선
 
 class Settings(BaseSettings):
     # 데이터베이스 설정
@@ -91,9 +89,6 @@ class Settings(BaseSettings):
         if missing_vars:
             raise ValueError(f"필수 환경변수가 설정되지 않았습니다: {', '.join(missing_vars)}")
 
-    model_config = dict(
-        env_file=".env",
-        env_file_encoding="utf-8"
-    )
+    # env_file 설정 제거 - 서버 환경변수 우선
 
 settings = Settings() 
