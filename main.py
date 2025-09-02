@@ -38,7 +38,8 @@ v1_router = APIRouter(prefix="/v1")
 v1_router.include_router(posts.router, prefix="/posts", tags=["posts"])
 v1_router.include_router(applications.router, prefix="/applications", tags=["applications"])
 v1_router.include_router(post_questions.router, prefix="/posts", tags=["post_questions"])
-v1_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+# auth.router를 맨 마지막에 등록
+v1_router.include_router(auth.router, tags=["auth"])
 
 # 메인 앱에 v1 라우터 포함
 app.include_router(v1_router)
