@@ -39,9 +39,9 @@ app.add_middleware(
 v1_router = APIRouter(prefix="/v1")
 
 # 기존 라우터들을 v1 네임스페이스에 포함
-v1_router.include_router(posts.router, prefix="/posts", tags=["posts"])
-v1_router.include_router(applications.router, prefix="/applications", tags=["applications"])
-v1_router.include_router(post_questions.router, prefix="/posts", tags=["post_questions"])
+v1_router.include_router(posts.router, tags=["posts"])
+v1_router.include_router(applications.router, tags=["applications"])
+v1_router.include_router(post_questions.router, tags=["post_questions"])
 # auth.router를 맨 마지막에 등록
 v1_router.include_router(auth.router, tags=["auth"])
 
