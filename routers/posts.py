@@ -290,7 +290,7 @@ async def get_post_options():
     Returns:
         PostOptionsResponse: 모집 분야, 모집 인원 옵션 목록
     """
-    return PostOptionsResponse(
-        recruitment_fields=[field.value for field in RecruitmentFieldEnum],
-        recruitment_headcounts=[headcount.value for headcount in RecruitmentHeadcountEnum]
-    ) 
+    return {
+        "recruitment_fields": [field.value for field in RecruitmentFieldEnum],
+        "recruitment_headcounts": [headcount.value for headcount in RecruitmentHeadcountEnum]
+    } 
