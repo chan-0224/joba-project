@@ -3,7 +3,6 @@ import os
 import jwt
 from datetime import datetime, timedelta
 from typing import Optional
-from config import settings
 
 # JWT 시크릿 키 - 환경변수에서 가져오며, 없으면 에러 발생
 SECRET_KEY = os.getenv("JWT_SECRET")
@@ -14,7 +13,8 @@ ALGORITHM = "HS256"
 
 def create_access_token(data: dict, minutes: int = None) -> str:
     if minutes is None:
-        minutes = settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+        # 환경변수에서 가져오되, 없으면 기본값 사용
+        minutes = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "10080"))  # 7일 기본값
     
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=minutes)
@@ -24,7 +24,8 @@ def create_access_token(data: dict, minutes: int = None) -> str:
 
 def create_signup_token(data: dict, minutes: int = None) -> str:
     if minutes is None:
-        minutes = settings.JWT_SIGNUP_TOKEN_EXPIRE_MINUTES
+        # 환경변수에서 가져오되, 없으면 기본값 사용
+        minutes = int(os.getenv("JWT_SIGNUP_TOKEN_EXPIRE_MINUTES", "15"))  # 15분 기본값
     
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=minutes)

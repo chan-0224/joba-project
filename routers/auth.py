@@ -5,7 +5,7 @@
 JWT 토큰 기반의 인증 시스템을 사용합니다.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header, Query
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db, User
@@ -13,6 +13,8 @@ from services import kakao_auth, naver_auth, google_auth
 from services.user_service import get_or_create_minimal
 from security import create_access_token, create_signup_token, decode_token
 from pydantic import BaseModel, HttpUrl, field_validator
+from urllib.parse import urlencode
+import os
 
 router = APIRouter(prefix="/auth")
 
@@ -99,43 +101,71 @@ def extract_email_and_id(provider: str, raw: dict):
 # ==================== 소셜 로그인 API ====================
 
 @router.get("/login/kakao")
-async def login_kakao():
+async def login_kakao(frontRedirect: str = Query(None, description="프론트엔드 리다이렉트 URL")):
     """
     카카오 로그인 시작
+    
+    Args:
+        frontRedirect: 로그인 완료 후 리다이렉트할 프론트엔드 URL
     
     Returns:
         RedirectResponse: 카카오 로그인 페이지로 리다이렉트
     """
-    return RedirectResponse(kakao_auth.get_login_url())
+    return RedirectResponse(kakao_auth.get_login_url(frontRedirect))
 
 
 @router.get("/kakao/callback")
-async def kakao_callback(code: str, db: Session = Depends(get_db)):
+async def kakao_callback(
+    code: str = Query(..., description="카카오에서 받은 인증 코드"),
+    state: str = Query(None, description="프론트엔드 리다이렉트 URL"),
+    db: Session = Depends(get_db)
+):
     """
     카카오 로그인 콜백 처리
     
     Args:
         code: 카카오에서 받은 인증 코드
+        state: 프론트엔드 리다이렉트 URL (frontRedirect)
         db: 데이터베이스 세션
         
     Returns:
-        JSONResponse: 회원가입 필요 여부와 토큰 정보
+        RedirectResponse: 프론트엔드로 302 리다이렉트
     """
-    token = kakao_auth.get_access_token(code)
-    raw = kakao_auth.get_user_info(token)
-    email, pid = extract_email_and_id("kakao", raw)
+    # 기본 프론트엔드 URL 설정
+    front_redirect = state or os.getenv("FRONT_DEFAULT_REDIRECT", "http://localhost:5173/oauth/callback/kakao")
     
-    if not pid:
-        raise HTTPException(400, "카카오 사용자의 id를 가져올 수 없습니다.")
+    try:
+        token = kakao_auth.get_access_token(code)
+        raw = kakao_auth.get_user_info(token)
+        email, pid = extract_email_and_id("kakao", raw)
+        
+        if not pid:
+            raise HTTPException(400, "카카오 사용자의 id를 가져올 수 없습니다.")
 
-    user, _ = get_or_create_minimal(db, provider="kakao", provider_user_id=pid, email=email)
+        user, _ = get_or_create_minimal(db, provider="kakao", provider_user_id=pid, email=email)
 
-    if not user.is_onboarded:
-        signup_token = create_signup_token({"uid": user.id})
-        return JSONResponse({"requires_signup": True, "signup_token": signup_token, "email": user.email})
-    
-    access = create_access_token({"sub": str(user.id)})
-    return JSONResponse({"requires_signup": False, "access_token": access, "user_id": user.id})
+        if not user.is_onboarded:
+            # 신규 회원: 회원가입 필요
+            signup_token = create_signup_token({"uid": user.id})
+            params = {
+                "requires_signup": "true",
+                "signup_token": signup_token,
+                "email": user.email or ""
+            }
+            redirect_url = f"{front_redirect}?{urlencode(params)}"
+            return RedirectResponse(redirect_url, status_code=302)
+        
+        # 기존 회원: 로그인 완료
+        access_token = create_access_token({"sub": str(user.id)})
+        params = {"token": access_token}
+        redirect_url = f"{front_redirect}?{urlencode(params)}"
+        return RedirectResponse(redirect_url, status_code=302)
+        
+    except Exception as e:
+        # 에러 발생 시 프론트엔드로 에러 정보와 함께 리다이렉트
+        params = {"error": str(e)}
+        redirect_url = f"{front_redirect}?{urlencode(params)}"
+        return RedirectResponse(redirect_url, status_code=302)
 
 
 @router.get("/login/naver")

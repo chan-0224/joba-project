@@ -28,6 +28,7 @@ app.add_middleware(
         "http://localhost:5173",  # 로컬 개발용
         "http://localhost:3000",  # 다른 로컬 포트도 추가
         "http://localhost:8080",  # 추가 로컬 포트
+        "https://ssajava-front.vercel.app",  # 프론트엔드 배포 URL
     ],
     allow_credentials=True,
     allow_methods=["*"],
