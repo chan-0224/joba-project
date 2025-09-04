@@ -56,16 +56,16 @@ class Application(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False, index=True)  # 인덱스 추가
-    applicant_id = Column(String, nullable=False, index=True)  # 소셜 ID 기반 user_id
+    user_id = Column(String, nullable=False, index=True)  # 소셜 ID 기반 user_id (applicant_id → user_id로 통일)
     status = Column(String(50), nullable=False, default="제출됨", index=True)  # 인덱스 추가
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)  # 인덱스 추가
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
-    # 중복 지원 방지 (같은 applicant_id가 같은 post_id에 중복 지원 불가)
+    # 중복 지원 방지 (같은 user_id가 같은 post_id에 중복 지원 불가)
     __table_args__ = (
-        UniqueConstraint('applicant_id', 'post_id', name='unique_applicant_post'),
+        UniqueConstraint('user_id', 'post_id', name='unique_user_post'),
         Index('idx_applications_post_status', 'post_id', 'status'),
-        Index('idx_applications_applicant_created', 'applicant_id', 'created_at'),
+        Index('idx_applications_user_created', 'user_id', 'created_at'),
     )
 
 class ApplicationAnswer(Base):
@@ -105,6 +105,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String(100), nullable=True, unique=True, index=True)  # 소셜 ID 기반 user_id
 
     kakao_id = Column(String, unique=True, nullable=True, index=True)  # 인덱스 추가
     naver_id = Column(String, unique=True, nullable=True, index=True)  # 인덱스 추가

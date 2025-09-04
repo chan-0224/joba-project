@@ -8,6 +8,16 @@ def generate_user_id(provider: str, provider_user_id: str) -> str:
     """소셜 ID 기반으로 user_id 생성"""
     return f"{provider}_{provider_user_id}"
 
+def get_user_id_from_user(user: User) -> str:
+    """User 객체에서 user_id 추출"""
+    if user.kakao_id:
+        return f"kakao_{user.kakao_id}"
+    elif user.naver_id:
+        return f"naver_{user.naver_id}"
+    elif user.google_id:
+        return f"google_{user.google_id}"
+    raise ValueError("No social ID found")
+
 def get_or_create_minimal(db: Session, *, provider: str, provider_user_id: str, email: str | None):
     pid_field = getattr(User, PROVIDER_ID_FIELD[provider])
     user_id = generate_user_id(provider, provider_user_id)
@@ -15,6 +25,10 @@ def get_or_create_minimal(db: Session, *, provider: str, provider_user_id: str, 
     # 1) provider id로 조회
     user = db.query(User).filter(pid_field == provider_user_id).first()
     if user:
+        # 기존 사용자의 user_id가 없으면 설정
+        if not user.user_id:
+            user.user_id = user_id
+            db.commit(); db.refresh(user)
         return user, user_id, False  # created=False
 
     # 2) email 중복
@@ -22,10 +36,18 @@ def get_or_create_minimal(db: Session, *, provider: str, provider_user_id: str, 
         existing = db.query(User).filter(User.email == email).first()
         if existing:
             setattr(existing, PROVIDER_ID_FIELD[provider], provider_user_id)
+            # user_id도 설정
+            if not existing.user_id:
+                existing.user_id = user_id
             db.commit(); db.refresh(existing)
             return existing, user_id, False
 
     # 3) 새로(임시) 생성
-    user = User(email=email, **{PROVIDER_ID_FIELD[provider]: provider_user_id}, is_onboarded=False)
+    user = User(
+        email=email, 
+        user_id=user_id,  # user_id 설정
+        **{PROVIDER_ID_FIELD[provider]: provider_user_id}, 
+        is_onboarded=False
+    )
     db.add(user); db.commit(); db.refresh(user)
     return user, user_id, True  # created=True 

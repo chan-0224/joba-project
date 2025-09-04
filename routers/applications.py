@@ -13,7 +13,7 @@ from schemas import (
     ApplicationListItem, ApplicationListResponse, ApplicationDetailResponse,
     ApplicationStatusUpdate, ApplicationStatusResponse, ApplicationSortEnum, ApplicationStatusEnum
 )
-from services.gcs_uploader import upload_file_to_gcs, generate_portfolio_blob_name
+from services.file_upload_service import FileUploadService
 from routers.auth import get_current_user
 import logging
 from datetime import datetime
@@ -57,7 +57,7 @@ async def create_application(
         
         # 2. 중복 지원 확인 (같은 사용자가 같은 공고에 중복 지원 방지)
         existing_application = db.query(Application).filter(
-            Application.applicant_id == current_user.id,
+            Application.user_id == get_user_id_from_user(current_user),
             Application.post_id == application_data.post_id
         ).first()
         
@@ -118,14 +118,13 @@ async def create_application(
                     )
                 
                 # GCS에 파일 업로드
-                blob_name = f"applications/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-                file_url = upload_file_to_gcs(file, blob_name)
+                file_url = await FileUploadService.upload_portfolio(file)
                 file_upload_results[file.filename] = file_url
         
         # 7. 지원서 생성
         application = Application(
             post_id=application_data.post_id,
-            applicant_id=current_user.id,
+            user_id=get_user_id_from_user(current_user),
             status="제출됨"
         )
         
@@ -169,7 +168,7 @@ async def create_application(
         return ApplicationResponse(
             id=application.id,
             post_id=application.post_id,
-            applicant_id=application.applicant_id,
+            user_id=application.user_id,
             status=application.status,
             created_at=application.created_at,
             updated_at=application.updated_at
@@ -208,7 +207,7 @@ async def get_application(
     """
     application = db.query(Application).filter(
         Application.id == application_id,
-        Application.applicant_id == current_user.id  # 본인의 지원서만 조회 가능
+        Application.user_id == get_user_id_from_user(current_user)  # 본인의 지원서만 조회 가능
     ).first()
     
     if not application:
@@ -267,7 +266,7 @@ async def get_post_applications(
     
     # 3. 지원자 목록 조회 (사용자 닉네임과 함께)
     query = db.query(Application, User.nickname).join(
-        User, Application.applicant_id == User.id
+        User, Application.user_id == User.user_id
     ).filter(Application.post_id == post_id)
     
     # 상태 필터 적용
@@ -294,7 +293,7 @@ async def get_post_applications(
     for application, nickname in applications:
         application_items.append(ApplicationListItem(
             application_id=application.id,
-            applicant_id=application.applicant_id,
+            user_id=application.user_id,
             applicant_nickname=nickname or "알 수 없음",
             status=application.status,
             submitted_at=application.created_at
@@ -347,14 +346,16 @@ async def get_application_detail(
         )
     
     # 지원자 본인이거나 공고 작성자인 경우만 접근 가능
-    if application.applicant_id != current_user.id and post.user_id != current_user.id:
+    from services.user_service import get_user_id_from_user
+    current_user_id = get_user_id_from_user(current_user)
+    if application.user_id != current_user_id and post.user_id != current_user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="이 지원서를 조회할 권한이 없습니다."
         )
     
     # 3. 지원자 정보 조회
-    applicant = db.query(User).filter(User.id == application.applicant_id).first()
+    applicant = db.query(User).filter(User.user_id == application.user_id).first()
     
     # 4. 질문과 답변 조회 (LEFT JOIN으로 모든 질문과 해당 답변)
     questions_answers = db.query(
@@ -507,7 +508,7 @@ async def cancel_application(
         )
     
     # 2. 권한 검증 - 지원자 본인만 취소 가능
-    if application.applicant_id != current_user.id:
+    if application.user_id != get_user_id_from_user(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="본인의 지원서만 취소할 수 있습니다."

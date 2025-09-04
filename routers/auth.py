@@ -45,12 +45,9 @@ def get_current_user(
     if not payload:
         raise HTTPException(401, "Invalid or expired token")
     
-    # payload["sub"]가 이제 user_id (문자열)이므로 User 테이블에서 조회
-    user = db.query(User).filter(
-        (User.kakao_id == payload["sub"].split("_", 1)[1] if payload["sub"].startswith("kakao_") else False) |
-        (User.naver_id == payload["sub"].split("_", 1)[1] if payload["sub"].startswith("naver_") else False) |
-        (User.google_id == payload["sub"].split("_", 1)[1] if payload["sub"].startswith("google_") else False)
-    ).first()
+    # payload["sub"]가 user_id (문자열)이므로 User 테이블에서 직접 조회
+    user_id = payload["sub"]
+    user = db.query(User).filter(User.user_id == user_id).first()
     
     if not user:
         raise HTTPException(404, "User not found")

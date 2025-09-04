@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -7,6 +8,7 @@ from routers import posts, applications, post_questions, auth
 from database import Base, engine
 from datetime import datetime
 from fastapi import APIRouter
+from exceptions import JOBAException
 
 # Rate Limiter 설정
 limiter = Limiter(key_func=get_remote_address)
@@ -20,6 +22,14 @@ app = FastAPI(
 # Rate Limiter를 앱에 추가
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# JOBA 예외 핸들러 추가
+@app.exception_handler(JOBAException)
+async def joba_exception_handler(request: Request, exc: JOBAException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message}
+    )
 
 # CORS 설정
 app.add_middleware(

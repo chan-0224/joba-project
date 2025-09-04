@@ -8,8 +8,8 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from database import get_db, Post, User, Application
-from schemas import PostCreate, PostResponse, PostListResponse, RecruitmentFieldEnum, RecruitmentHeadcountEnum, PostOptionsResponse, SortEnum
-from services.gcs_uploader import upload_file_to_gcs, generate_unique_blob_name
+from schemas import PostCreate, PostResponse, PostListResponse, RecruitmentFieldEnum, RecruitmentHeadcountEnum, SortEnum
+from services.file_upload_service import FileUploadService
 from routers.auth import get_current_user
 import logging
 from sqlalchemy import or_, func, select
@@ -50,28 +50,13 @@ async def create_post(
             detail="이미지 파일만 업로드 가능합니다."
         )
     
-    filename = image_file.filename or "uploaded_image"
-    try:
-        # GCS에 이미지 업로드
-        blob_name = generate_unique_blob_name(filename)
-        image_url = upload_file_to_gcs(image_file, blob_name)
-    except Exception as e:
-        logging.error(f"GCS 업로드 실패: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail="이미지 업로드에 실패했습니다."
-        )
+    # GCS에 이미지 업로드
+    image_url = await FileUploadService.upload_image(image_file)
     
     # DB에 공고 정보 저장
     try:
-        # user_id 생성
-        user_id = None
-        if current_user.kakao_id:
-            user_id = f"kakao_{current_user.kakao_id}"
-        elif current_user.naver_id:
-            user_id = f"naver_{current_user.naver_id}"
-        elif current_user.google_id:
-            user_id = f"google_{current_user.google_id}"
+        from services.user_service import get_user_id_from_user
+        user_id = get_user_id_from_user(current_user)
         
         post = Post(
             user_id=user_id,
@@ -215,20 +200,6 @@ async def list_posts(
         total_count=total_count,
         posts=posts_with_count
     )
-
-
-@router.get("/posts/options")
-async def get_post_options():
-    """
-    공고 작성 시 사용할 수 있는 옵션들 조회
-    
-    Returns:
-        dict: 모집 분야, 모집 인원 옵션 목록
-    """
-    return {
-        "recruitment_fields": [field.value for field in RecruitmentFieldEnum],
-        "recruitment_headcounts": [headcount.value for headcount in RecruitmentHeadcountEnum]
-    }
 
 
 @router.get("/posts/{post_id}", response_model=PostResponse)

@@ -89,9 +89,6 @@ class PostListResponse(BaseModel):
     total_count: int
     posts: List[PostResponse]
 
-class PostOptionsResponse(BaseModel):
-    recruitment_fields: List[str]
-    recruitment_headcounts: List[str]
 
 # 새로운 스키마들
 class PostQuestionCreate(BaseModel):
