@@ -257,28 +257,11 @@ const postsUrl = 'https://joba-project.onrender.com/v1/posts';
   ]
 }
 
-// 공고 옵션 상수 (프론트엔드에서 하드코딩)
-// ⚠️ 중요: 이 값들은 백엔드 API에서 제공하지 않으므로 프론트엔드에서 상수로 정의하여 사용하세요.
-const RECRUITMENT_FIELDS = ["프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"];
-const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
-
-// 사용 예시
-const PostCreateForm = () => {
-  return (
-    <form>
-      <select>
-        {RECRUITMENT_FIELDS.map(field => (
-          <option key={field} value={field}>{field}</option>
-        ))}
-      </select>
-      <select>
-        {RECRUITMENT_HEADCOUNTS.map(headcount => (
-          <option key={headcount} value={headcount}>{headcount}</option>
-        ))}
-      </select>
-    </form>
-  );
-};
+// 공고 옵션 조회 예시
+const postOptions = {
+  "recruitment_fields": ["프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"],
+  "recruitment_headcounts": ["1~2인", "3~5인", "6~10인", "인원미정"]
+}
 
 // 잘못된 방법 (중복 경로)
 const wrongUrl = 'https://joba-project.onrender.com/v1/posts/posts';

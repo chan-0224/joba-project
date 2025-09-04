@@ -49,6 +49,7 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 - **생성**: `POST /v1/posts` (이미지 업로드 포함)
 - **목록**: `GET /v1/posts` (지원자 수, 모집된 인원 수, 모집 상태 포함)
 - **상세**: `GET /v1/posts/{id}` (지원자 수, 모집된 인원 수, 모집 상태 포함)
+- **옵션**: `GET /v1/posts/options` (모집 분야, 모집 인원 옵션)
 - **수정**: `PUT /v1/posts/{id}`
 - **삭제**: `DELETE /v1/posts/{id}`
 
