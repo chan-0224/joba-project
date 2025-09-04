@@ -42,6 +42,7 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 - **공고 생성**: `POST /v1/posts` (이미지 업로드 포함)
 - **공고 목록**: `GET /v1/posts` (지원자 수, 모집된 인원 수, 모집 상태 포함)
 - **공고 상세**: `GET /v1/posts/{post_id}` (지원자 수, 모집된 인원 수, 모집 상태 포함)
+- **공고 옵션**: `GET /v1/posts/options` (모집 분야, 모집 인원 옵션)
 - **공고 수정**: `PUT /v1/posts/{post_id}`
 - **공고 삭제**: `DELETE /v1/posts/{post_id}`
 
@@ -110,6 +111,7 @@ const AuthGuard = ({ children }) => { /* 인증 필요 컴포넌트 */ }
 // 공고 관련 API 함수
 const getPosts = async (params) => { /* 공고 목록 조회 */ }
 const getPost = async (id) => { /* 공고 상세 조회 */ }
+const getPostOptions = async () => { /* 공고 옵션 조회 */ }
 const createPost = async (postData) => { /* 공고 생성 */ }
 const updatePost = async (id, postData) => { /* 공고 수정 */ }
 const deletePost = async (id) => { /* 공고 삭제 */ }
@@ -139,6 +141,7 @@ const logout = () => { /* 로그아웃 */ }
 // 공고 관련 상태
 const [posts, setPosts] = useState([])                    // 공고 목록
 const [currentPost, setCurrentPost] = useState(null)      // 현재 선택된 공고
+const [postOptions, setPostOptions] = useState(null)      // 공고 옵션 (모집 분야, 인원)
 const [postQuestions, setPostQuestions] = useState([])    // 공고 질문 목록
 const [isLoadingPosts, setIsLoadingPosts] = useState(false) // 공고 로딩 상태
 const [postError, setPostError] = useState(null)          // 공고 관련 에러
