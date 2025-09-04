@@ -226,8 +226,8 @@ async def get_post_options():
         dict: 모집 분야, 모집 인원 옵션 목록
     """
     return {
-        "recruitment_fields": ["프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"],
-        "recruitment_headcounts": ["1~2인", "3~5인", "6~10인", "인원미정"]
+        "recruitment_fields": [field.value for field in RecruitmentFieldEnum],
+        "recruitment_headcounts": [headcount.value for headcount in RecruitmentHeadcountEnum]
     }
 
 
