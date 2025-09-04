@@ -46,9 +46,10 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 ## 📝 주요 기능
 
 ### 공고 관리
-- **생성**: `POST /v1/posts`
+- **생성**: `POST /v1/posts` (이미지 업로드 포함)
 - **목록**: `GET /v1/posts` (지원자 수, 모집된 인원 수, 모집 상태 포함)
 - **상세**: `GET /v1/posts/{id}` (지원자 수, 모집된 인원 수, 모집 상태 포함)
+- **옵션**: `GET /v1/posts/options` (모집 분야, 모집 인원 옵션)
 - **수정**: `PUT /v1/posts/{id}`
 - **삭제**: `DELETE /v1/posts/{id}`
 
@@ -83,6 +84,7 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 - `recruited_count`: 모집된 인원 수
 - `recruitment_status`: 모집 상태
 - `recruitment_headcount`: 모집 인원
+- `user_id`: 소셜 ID 기반 사용자 식별자 (예: `kakao_123456789`)
 
 ## 📚 API 문서
 - **Swagger UI**: `https://joba-project.onrender.com/docs`
@@ -93,6 +95,11 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 ### URL 중복 문제
 **문제**: `/v1/posts/posts`, `/v1/applications/applications` 같은 중복 경로
 **해결**: `main.py`에서 라우터 등록 시 `prefix` 제거
+
+### CORS 설정
+**허용된 Origin**:
+- `http://localhost:5173` (로컬 개발용)
+- `https://ssajava-front.vercel.app` (프론트엔드 배포 URL)
 
 ### 프론트엔드 설정
 **올바른 환경변수**:
