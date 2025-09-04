@@ -176,6 +176,7 @@ async def list_posts(
         now = datetime.now()
         recruitment_status = "마감" if post.deadline < now else "모집중"
         
+        # user_id를 소셜 ID 기반으로 생성 (임시로 post.user_id 사용)
         post_dict = {
             "id": post.id,
             "user_id": post.user_id,

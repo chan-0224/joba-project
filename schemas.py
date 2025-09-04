@@ -66,7 +66,7 @@ class PostCreate(BaseModel):
 
 class PostResponse(BaseModel):
     id: int
-    user_id: int
+    user_id: str
     image_url: str
     title: str
     description: str

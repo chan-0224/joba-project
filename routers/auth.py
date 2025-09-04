@@ -45,7 +45,13 @@ def get_current_user(
     if not payload:
         raise HTTPException(401, "Invalid or expired token")
     
-    user = db.get(User, int(payload["sub"]))
+    # payload["sub"]가 이제 user_id (문자열)이므로 User 테이블에서 조회
+    user = db.query(User).filter(
+        (User.kakao_id == payload["sub"].split("_", 1)[1] if payload["sub"].startswith("kakao_") else False) |
+        (User.naver_id == payload["sub"].split("_", 1)[1] if payload["sub"].startswith("naver_") else False) |
+        (User.google_id == payload["sub"].split("_", 1)[1] if payload["sub"].startswith("google_") else False)
+    ).first()
+    
     if not user:
         raise HTTPException(404, "User not found")
     
@@ -63,8 +69,18 @@ async def me(current_user: User = Depends(get_current_user)):
     Returns:
         dict: 사용자 정보 (ID, 이메일, 닉네임, 트랙, 온보딩 상태)
     """
+    # user_id 생성
+    user_id = None
+    if current_user.kakao_id:
+        user_id = f"kakao_{current_user.kakao_id}"
+    elif current_user.naver_id:
+        user_id = f"naver_{current_user.naver_id}"
+    elif current_user.google_id:
+        user_id = f"google_{current_user.google_id}"
+    
     return {
         "id": current_user.id,
+        "user_id": user_id,
         "email": current_user.email,
         "nickname": current_user.nickname,
         "track": current_user.track,
@@ -142,11 +158,11 @@ async def kakao_callback(
         if not pid:
             raise HTTPException(400, "카카오 사용자의 id를 가져올 수 없습니다.")
 
-        user, _ = get_or_create_minimal(db, provider="kakao", provider_user_id=pid, email=email)
+        user, user_id, _ = get_or_create_minimal(db, provider="kakao", provider_user_id=pid, email=email)
 
         if not user.is_onboarded:
             # 신규 회원: 회원가입 필요
-            signup_token = create_signup_token({"uid": user.id})
+            signup_token = create_signup_token({"uid": user_id})
             params = {
                 "requires_signup": "true",
                 "signup_token": signup_token,
@@ -156,7 +172,7 @@ async def kakao_callback(
             return RedirectResponse(redirect_url, status_code=302)
         
         # 기존 회원: 로그인 완료
-        access_token = create_access_token({"sub": str(user.id)})
+        access_token = create_access_token({"sub": user_id})
         params = {"token": access_token}
         redirect_url = f"{front_redirect}?{urlencode(params)}"
         return RedirectResponse(redirect_url, status_code=302)

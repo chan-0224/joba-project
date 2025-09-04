@@ -14,7 +14,7 @@ class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, nullable=False, index=True)  # 인덱스 추가
+    user_id = Column(String, nullable=False, index=True)  # 소셜 ID 기반 user_id
     image_url = Column(String(255), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
@@ -56,7 +56,7 @@ class Application(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False, index=True)  # 인덱스 추가
-    applicant_id = Column(Integer, nullable=False, index=True)  # 인덱스 추가
+    applicant_id = Column(String, nullable=False, index=True)  # 소셜 ID 기반 user_id
     status = Column(String(50), nullable=False, default="제출됨", index=True)  # 인덱스 추가
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)  # 인덱스 추가
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
