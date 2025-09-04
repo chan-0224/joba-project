@@ -25,8 +25,8 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 ## 🔐 인증 (Authentication)
 
 ### 소셜 로그인
-- **카카오 로그인**: `GET /v1/auth/login/kakao`
-- **카카오 콜백**: `GET /v1/auth/kakao/callback`
+- **카카오 로그인**: `GET /v1/auth/login/kakao?frontRedirect={url}`
+- **카카오 콜백**: `GET /v1/auth/kakao/callback` (302 리다이렉트)
 - **네이버 로그인**: `GET /v1/auth/login/naver`
 - **네이버 콜백**: `GET /v1/auth/naver/callback`
 - **구글 로그인**: `GET /v1/auth/login/google`
@@ -62,6 +62,7 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 - `http://localhost:5173` (로컬 개발용)
 - `http://localhost:3000` (로컬 개발용)
 - `http://localhost:8080` (로컬 개발용)
+- `https://ssajava-front.vercel.app` (프론트엔드 배포 URL)
 
 ## 🧩 프론트엔드 컴포넌트 가이드
 
@@ -225,8 +226,9 @@ const handleFilterChange = (filterType, value) => { /* 필터 변경 */ }
 
 ### 카카오 로그인 요청
 ```javascript
-// 올바른 방법
-const loginUrl = 'https://joba-project.onrender.com/v1/auth/login/kakao';
+// 올바른 방법 (frontRedirect 파라미터 포함)
+const frontRedirect = encodeURIComponent('http://localhost:5173/oauth/callback/kakao');
+const loginUrl = `https://joba-project.onrender.com/v1/auth/login/kakao?frontRedirect=${frontRedirect}`;
 
 // 잘못된 방법 (중복 경로)
 const wrongUrl = 'https://joba-project.onrender.com/v1/auth/auth/login/kakao';

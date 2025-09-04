@@ -35,7 +35,7 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 ## 🔐 인증 시스템
 
 ### 소셜 로그인
-- **카카오**: `/v1/auth/login/kakao` → `/v1/auth/kakao/callback`
+- **카카오**: `/v1/auth/login/kakao?frontRedirect={url}` → `/v1/auth/kakao/callback` (302 리다이렉트)
 - **네이버**: `/v1/auth/login/naver` → `/v1/auth/naver/callback`
 - **구글**: `/v1/auth/login/google` → `/v1/auth/google/callback`
 
@@ -67,6 +67,7 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 - `http://localhost:5173` (로컬 개발용)
 - `http://localhost:3000` (로컬 개발용)
 - `http://localhost:8080` (로컬 개발용)
+- `https://ssajava-front.vercel.app` (프론트엔드 배포 URL)
 
 ## 🔧 환경변수
 필수 환경변수:
