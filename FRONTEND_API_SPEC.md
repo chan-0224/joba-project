@@ -45,6 +45,15 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 - **공고 수정**: `PUT /v1/posts/{post_id}`
 - **공고 삭제**: `DELETE /v1/posts/{post_id}`
 
+### 공고 옵션 (프론트엔드 하드코딩)
+⚠️ **중요**: 공고 작성 시 사용할 옵션들은 백엔드 API에서 제공하지 않습니다.
+프론트엔드에서 다음 상수들을 사용하세요:
+
+```javascript
+const RECRUITMENT_FIELDS = ["프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"];
+const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
+```
+
 ### 공고 질문
 - **질문 생성**: `POST /v1/posts/{post_id}/questions`
 - **질문 조회**: `GET /v1/posts/{post_id}/questions`
@@ -115,6 +124,10 @@ const updatePost = async (id, postData) => { /* 공고 수정 */ }
 const deletePost = async (id) => { /* 공고 삭제 */ }
 const searchPosts = async (searchParams) => { /* 공고 검색 */ }
 
+// 공고 옵션 (프론트엔드 하드코딩)
+const RECRUITMENT_FIELDS = ["프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"];
+const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
+
 // 지원서 관련 API 함수
 const getApplications = async () => { /* 지원서 목록 조회 */ }
 const getApplication = async (id) => { /* 지원서 상세 조회 */ }
@@ -142,6 +155,10 @@ const [currentPost, setCurrentPost] = useState(null)      // 현재 선택된 �
 const [postQuestions, setPostQuestions] = useState([])    // 공고 질문 목록
 const [isLoadingPosts, setIsLoadingPosts] = useState(false) // 공고 로딩 상태
 const [postError, setPostError] = useState(null)          // 공고 관련 에러
+
+// 공고 옵션 상수 (프론트엔드 하드코딩)
+const RECRUITMENT_FIELDS = ["프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"];
+const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 
 // 지원서 관련 상태
 const [applications, setApplications] = useState([])      // 지원서 목록
@@ -263,12 +280,12 @@ const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 const PostCreateForm = () => {
   return (
     <form>
-      <select>
+      <select name="recruitment_field">
         {RECRUITMENT_FIELDS.map(field => (
           <option key={field} value={field}>{field}</option>
         ))}
       </select>
-      <select>
+      <select name="recruitment_headcount">
         {RECRUITMENT_HEADCOUNTS.map(headcount => (
           <option key={headcount} value={headcount}>{headcount}</option>
         ))}
