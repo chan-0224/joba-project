@@ -185,8 +185,11 @@ async def list_posts(
         now = datetime.now()
         recruitment_status = "마감" if post.deadline < now else "모집중"
         
-        # user_id를 소셜 ID 기반으로 생성
-        user_id = post.user_id  # 이미 소셜 ID 기반으로 저장됨
+        # user_id 처리 (기존 Integer와 새로운 String 호환)
+        user_id = post.user_id
+        if isinstance(user_id, int):
+            # 기존 Integer user_id를 String으로 변환
+            user_id = str(user_id)
         
         post_dict = {
             "id": post.id,
@@ -252,10 +255,16 @@ async def get_post_detail(
     now = datetime.now()
     recruitment_status = "마감" if post.deadline < now else "모집중"
     
+    # user_id 처리 (기존 Integer와 새로운 String 호환)
+    user_id = post.user_id
+    if isinstance(user_id, int):
+        # 기존 Integer user_id를 String으로 변환
+        user_id = str(user_id)
+    
     # PostResponse 형태로 반환
     return {
         "id": post.id,
-        "user_id": post.user_id,
+        "user_id": user_id,
         "image_url": post.image_url,
         "title": post.title,
         "description": post.description,
