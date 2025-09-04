@@ -202,6 +202,20 @@ async def list_posts(
     )
 
 
+@router.get("/posts/options")
+async def get_post_options():
+    """
+    공고 작성 시 사용할 수 있는 옵션들 조회
+    
+    Returns:
+        dict: 모집 분야, 모집 인원 옵션 목록
+    """
+    return {
+        "recruitment_fields": [field.value for field in RecruitmentFieldEnum],
+        "recruitment_headcounts": [headcount.value for headcount in RecruitmentHeadcountEnum]
+    }
+
+
 @router.get("/posts/{post_id}", response_model=PostResponse)
 async def get_post_detail(
     post_id: int, 
