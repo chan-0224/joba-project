@@ -202,7 +202,7 @@ async def list_posts(
     )
 
 
-@router.get("/posts/{post_id:int}", response_model=PostResponse)
+@router.get("/posts/{post_id}", response_model=PostResponse)
 async def get_post_detail(
     post_id: int, 
     db: Session = Depends(get_db)
