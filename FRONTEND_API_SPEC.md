@@ -42,7 +42,7 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 - **공고 생성**: `POST /v1/posts` (이미지 업로드 포함)
 - **공고 목록**: `GET /v1/posts` (지원자 수, 모집된 인원 수, 모집 상태 포함)
 - **공고 상세**: `GET /v1/posts/{post_id}` (지원자 수, 모집된 인원 수, 모집 상태 포함)
-- **공고 옵션**: `GET /v1/posts/options` (모집 분야, 모집 인원 옵션)
+- **공고 옵션**: `GET /v1/posts/fields` (모집 분야, 모집 인원 옵션)
 - **공고 수정**: `PUT /v1/posts/{post_id}`
 - **공고 삭제**: `DELETE /v1/posts/{post_id}`
 

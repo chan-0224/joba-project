@@ -202,7 +202,7 @@ async def list_posts(
     )
 
 
-@router.get("/posts/options")
+@router.get("/posts/fields")
 async def get_post_options():
     """
     공고 작성 시 사용할 수 있는 옵션들 조회
