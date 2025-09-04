@@ -47,8 +47,8 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 
 ### 공고 관리
 - **생성**: `POST /v1/posts`
-- **목록**: `GET /v1/posts`
-- **상세**: `GET /v1/posts/{id}`
+- **목록**: `GET /v1/posts` (지원자 수, 모집된 인원 수, 모집 상태 포함)
+- **상세**: `GET /v1/posts/{id}` (지원자 수, 모집된 인원 수, 모집 상태 포함)
 - **수정**: `PUT /v1/posts/{id}`
 - **삭제**: `DELETE /v1/posts/{id}`
 
@@ -77,6 +77,12 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 - `GCP_SERVICE_ACCOUNT_KEY_JSON`: GCP 서비스 계정 키
 - `JWT_SECRET`: JWT 서명용 시크릿 키
 - 소셜 로그인 관련 키들 (카카오, 네이버, 구글)
+
+## 📊 공고 응답 데이터
+- `application_count`: 지원자 수
+- `recruited_count`: 모집된 인원 수
+- `recruitment_status`: 모집 상태
+- `recruitment_headcount`: 모집 인원
 
 ## 📚 API 문서
 - **Swagger UI**: `https://joba-project.onrender.com/docs`

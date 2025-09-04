@@ -78,7 +78,9 @@ class PostResponse(BaseModel):
     external_link: Optional[str]
     created_at: datetime
     updated_at: datetime
-    views: int
+    application_count: int = 0  # 지원자 수
+    recruited_count: int = 0  # 모집된 인원 수 (합격자)
+    recruitment_status: str = "모집중"  # 모집 상태
 
     class Config:
         from_attributes = True

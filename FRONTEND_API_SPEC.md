@@ -40,8 +40,8 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 
 ### 공고 관리
 - **공고 생성**: `POST /v1/posts`
-- **공고 목록**: `GET /v1/posts`
-- **공고 상세**: `GET /v1/posts/{post_id}`
+- **공고 목록**: `GET /v1/posts` (지원자 수, 모집된 인원 수, 모집 상태 포함)
+- **공고 상세**: `GET /v1/posts/{post_id}` (지원자 수, 모집된 인원 수, 모집 상태 포함)
 - **공고 수정**: `PUT /v1/posts/{post_id}`
 - **공고 삭제**: `DELETE /v1/posts/{post_id}`
 
@@ -238,6 +238,21 @@ const wrongUrl = 'https://joba-project.onrender.com/v1/auth/auth/login/kakao';
 ```javascript
 // 올바른 방법
 const postsUrl = 'https://joba-project.onrender.com/v1/posts';
+
+// 응답 예시
+{
+  "total_count": 10,
+  "posts": [
+    {
+      "id": 1,
+      "title": "프론트엔드 개발자 모집",
+      "recruitment_headcount": "3~5인",
+      "application_count": 8,
+      "recruited_count": 2,
+      "recruitment_status": "모집중"
+    }
+  ]
+}
 
 // 잘못된 방법 (중복 경로)
 const wrongUrl = 'https://joba-project.onrender.com/v1/posts/posts';

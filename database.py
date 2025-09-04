@@ -26,7 +26,6 @@ class Post(Base):
     external_link = Column(String(255), nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)  # 인덱스 추가
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
-    views = Column(Integer, nullable=False, default=0, index=True)  # 인덱스 추가
 
     # 복합 인덱스 추가
     __table_args__ = (

@@ -160,9 +160,45 @@ async def list_posts(
     offset = (page - 1) * size
     posts = query.offset(offset).limit(size).all()
     
+    # 각 공고의 지원자 수, 모집된 인원 수, 모집 상태를 계산해서 추가
+    posts_with_count = []
+    for post in posts:
+        # 지원자 수 계산
+        application_count = db.query(func.count(Application.id)).filter(Application.post_id == post.id).scalar()
+        
+        # 모집된 인원 수 계산 (합격자)
+        recruited_count = db.query(func.count(Application.id)).filter(
+            Application.post_id == post.id,
+            Application.status == "합격"
+        ).scalar()
+        
+        # 모집 상태 계산
+        now = datetime.now()
+        recruitment_status = "마감" if post.deadline < now else "모집중"
+        
+        post_dict = {
+            "id": post.id,
+            "user_id": post.user_id,
+            "image_url": post.image_url,
+            "title": post.title,
+            "description": post.description,
+            "recruitment_field": post.recruitment_field,
+            "recruitment_headcount": post.recruitment_headcount,
+            "school_specific": post.school_specific,
+            "target_school_name": post.target_school_name,
+            "deadline": post.deadline,
+            "external_link": post.external_link,
+            "created_at": post.created_at,
+            "updated_at": post.updated_at,
+            "application_count": application_count or 0,
+            "recruited_count": recruited_count or 0,
+            "recruitment_status": recruitment_status
+        }
+        posts_with_count.append(post_dict)
+    
     return PostListResponse(
         total_count=total_count,
-        posts=posts
+        posts=posts_with_count
     )
 
 
@@ -173,8 +209,6 @@ async def get_post_detail(
 ):
     """
     공고 상세 조회
-    
-    조회 시 조회수가 자동으로 증가합니다.
     
     Args:
         post_id: 조회할 공고 ID
@@ -193,11 +227,38 @@ async def get_post_detail(
             detail="공고를 찾을 수 없습니다."
         )
     
-    # 조회수 증가
-    post.views += 1
-    db.commit()
+    # 지원자 수 계산
+    application_count = db.query(func.count(Application.id)).filter(Application.post_id == post.id).scalar()
     
-    return post
+    # 모집된 인원 수 계산 (합격자)
+    recruited_count = db.query(func.count(Application.id)).filter(
+        Application.post_id == post.id,
+        Application.status == "합격"
+    ).scalar()
+    
+    # 모집 상태 계산
+    now = datetime.now()
+    recruitment_status = "마감" if post.deadline < now else "모집중"
+    
+    # PostResponse 형태로 반환
+    return {
+        "id": post.id,
+        "user_id": post.user_id,
+        "image_url": post.image_url,
+        "title": post.title,
+        "description": post.description,
+        "recruitment_field": post.recruitment_field,
+        "recruitment_headcount": post.recruitment_headcount,
+        "school_specific": post.school_specific,
+        "target_school_name": post.target_school_name,
+        "deadline": post.deadline,
+        "external_link": post.external_link,
+        "created_at": post.created_at,
+        "updated_at": post.updated_at,
+        "application_count": application_count or 0,
+        "recruited_count": recruited_count or 0,
+        "recruitment_status": recruitment_status
+    }
 
 
 @router.get("/posts/options", response_model=PostOptionsResponse)
