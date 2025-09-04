@@ -217,6 +217,20 @@ async def list_posts(
     )
 
 
+@router.get("/posts/options")
+async def get_post_options():
+    """
+    공고 작성 시 사용할 수 있는 옵션들 조회
+    
+    Returns:
+        dict: 모집 분야, 모집 인원 옵션 목록
+    """
+    return {
+        "recruitment_fields": ["프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"],
+        "recruitment_headcounts": ["1~2인", "3~5인", "6~10인", "인원미정"]
+    }
+
+
 @router.get("/posts/{post_id}", response_model=PostResponse)
 async def get_post_detail(
     post_id: int, 
@@ -281,16 +295,3 @@ async def get_post_detail(
         "recruitment_status": recruitment_status
     }
 
-
-@router.get("/posts/options")
-async def get_post_options():
-    """
-    공고 작성 시 사용할 수 있는 옵션들 조회
-    
-    Returns:
-        dict: 모집 분야, 모집 인원 옵션 목록
-    """
-    return {
-        "recruitment_fields": ["프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"],
-        "recruitment_headcounts": ["1~2인", "3~5인", "6~10인", "인원미정"]
-    } 
