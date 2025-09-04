@@ -64,8 +64,17 @@ async def create_post(
     
     # DB에 공고 정보 저장
     try:
+        # user_id 생성
+        user_id = None
+        if current_user.kakao_id:
+            user_id = f"kakao_{current_user.kakao_id}"
+        elif current_user.naver_id:
+            user_id = f"naver_{current_user.naver_id}"
+        elif current_user.google_id:
+            user_id = f"google_{current_user.google_id}"
+        
         post = Post(
-            user_id=current_user.id,
+            user_id=user_id,
             image_url=image_url,
             title=post_data.title,
             description=post_data.description,
@@ -176,10 +185,12 @@ async def list_posts(
         now = datetime.now()
         recruitment_status = "마감" if post.deadline < now else "모집중"
         
-        # user_id를 소셜 ID 기반으로 생성 (임시로 post.user_id 사용)
+        # user_id를 소셜 ID 기반으로 생성
+        user_id = post.user_id  # 이미 소셜 ID 기반으로 저장됨
+        
         post_dict = {
             "id": post.id,
-            "user_id": post.user_id,
+            "user_id": user_id,
             "image_url": post.image_url,
             "title": post.title,
             "description": post.description,
