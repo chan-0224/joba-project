@@ -3,17 +3,20 @@ from fastapi import HTTPException
 
 def get_login_url(front_redirect: str = None):
     """카카오 로그인 URL 생성"""
+    from urllib.parse import urlencode
+    
     params = {
         "response_type": "code",
         "client_id": os.getenv('KAKAO_CLIENT_ID'),
         "redirect_uri": os.getenv('KAKAO_REDIRECT_URI'),
     }
     
-    # frontRedirect가 있으면 state에 포함 (간단한 방식)
+    # frontRedirect가 있으면 state에 포함 (URL 인코딩)
     if front_redirect:
         params["state"] = front_redirect
     
-    query_string = "&".join([f"{k}={v}" for k, v in params.items()])
+    # URL 인코딩을 사용하여 안전하게 쿼리 스트링 생성
+    query_string = urlencode(params)
     return f"https://kauth.kakao.com/oauth/authorize?{query_string}"
 
 def get_access_token(code: str):

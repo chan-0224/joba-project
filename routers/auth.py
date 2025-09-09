@@ -124,7 +124,18 @@ async def login_kakao(frontRedirect: str = Query(None, description="프론트엔
     Returns:
         RedirectResponse: 카카오 로그인 페이지로 리다이렉트
     """
-    return RedirectResponse(kakao_auth.get_login_url(frontRedirect))
+    # URL 디코딩 처리
+    from urllib.parse import unquote
+    decoded_redirect = unquote(frontRedirect) if frontRedirect else None
+    
+    # 디버깅을 위한 로그 추가
+    import logging
+    logging.info(f"카카오 로그인 시작 - frontRedirect: {frontRedirect}, decoded: {decoded_redirect}")
+    
+    login_url = kakao_auth.get_login_url(decoded_redirect)
+    logging.info(f"생성된 카카오 로그인 URL: {login_url}")
+    
+    return RedirectResponse(login_url)
 
 
 @router.get("/kakao/callback")
@@ -144,12 +155,18 @@ async def kakao_callback(
     Returns:
         RedirectResponse: 프론트엔드로 302 리다이렉트
     """
-    # 기본 프론트엔드 URL 설정
-    front_redirect = state or os.getenv("FRONT_DEFAULT_REDIRECT", "http://localhost:5173/oauth/callback/kakao")
+    # URL 디코딩 처리
+    from urllib.parse import unquote
+    front_redirect = unquote(state) if state else os.getenv("FRONT_DEFAULT_REDIRECT", "http://localhost:5173/oauth/callback/kakao")
     
     # 디버깅을 위한 로그 추가
     import logging
     logging.info(f"카카오 콜백 - code: {code[:10]}..., state: {state}, front_redirect: {front_redirect}")
+    
+    # 프로덕션 환경에서 HTTPS 강제 리다이렉트 확인 (로컬 제외)
+    if front_redirect.startswith("http://") and "localhost" not in front_redirect:
+        front_redirect = front_redirect.replace("http://", "https://")
+        logging.info(f"HTTPS로 변경된 front_redirect: {front_redirect}")
     
     try:
         token = kakao_auth.get_access_token(code)
@@ -170,18 +187,24 @@ async def kakao_callback(
                 "email": user.email or ""
             }
             redirect_url = f"{front_redirect}?{urlencode(params)}"
+            logging.info(f"신규 회원 리다이렉트 URL: {redirect_url}")
             return RedirectResponse(redirect_url, status_code=302)
         
         # 기존 회원: 로그인 완료
         access_token = create_access_token({"sub": user_id})
         params = {"token": access_token}
         redirect_url = f"{front_redirect}?{urlencode(params)}"
+        logging.info(f"기존 회원 리다이렉트 URL: {redirect_url}")
         return RedirectResponse(redirect_url, status_code=302)
         
     except Exception as e:
         # 에러 발생 시 프론트엔드로 에러 정보와 함께 리다이렉트
-        params = {"error": str(e)}
+        import traceback
+        error_msg = str(e)
+        logging.error(f"카카오 콜백 에러: {error_msg}\n{traceback.format_exc()}")
+        params = {"error": error_msg}
         redirect_url = f"{front_redirect}?{urlencode(params)}"
+        logging.info(f"에러 리다이렉트 URL: {redirect_url}")
         return RedirectResponse(redirect_url, status_code=302)
 
 
