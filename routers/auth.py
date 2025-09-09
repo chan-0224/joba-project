@@ -147,6 +147,10 @@ async def kakao_callback(
     # 기본 프론트엔드 URL 설정
     front_redirect = state or os.getenv("FRONT_DEFAULT_REDIRECT", "http://localhost:5173/oauth/callback/kakao")
     
+    # 디버깅을 위한 로그 추가
+    import logging
+    logging.info(f"카카오 콜백 - code: {code[:10]}..., state: {state}, front_redirect: {front_redirect}")
+    
     try:
         token = kakao_auth.get_access_token(code)
         raw = kakao_auth.get_user_info(token)
