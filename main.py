@@ -69,7 +69,35 @@ app.include_router(v1_router)
 # DB 테이블 생성
 @app.on_event("startup")
 def on_startup():
-    Base.metadata.create_all(bind=engine)
+    try:
+        print("데이터베이스 스키마 업데이트 시작...")
+        Base.metadata.create_all(bind=engine)
+        print("✅ 데이터베이스 스키마 업데이트 완료")
+        
+        # user_id 컬럼이 없으면 추가 (PostgreSQL)
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            # users 테이블에 user_id 컬럼이 있는지 확인
+            result = conn.execute(text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'users' AND column_name = 'user_id'
+            """))
+            
+            if not result.fetchone():
+                print("user_id 컬럼이 없습니다. 추가 중...")
+                conn.execute(text("""
+                    ALTER TABLE users 
+                    ADD COLUMN user_id VARCHAR(100) UNIQUE
+                """))
+                conn.commit()
+                print("✅ user_id 컬럼 추가 완료")
+            else:
+                print("✅ user_id 컬럼이 이미 존재합니다")
+                
+    except Exception as e:
+        print(f"❌ 데이터베이스 스키마 업데이트 실패: {e}")
+        # 에러가 발생해도 서버는 계속 실행
 
 # 서버 슬립 방지를 위한 핑 엔드포인트
 @app.get("/ping")
