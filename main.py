@@ -10,6 +10,9 @@ from datetime import datetime
 from fastapi import APIRouter
 from exceptions import JOBAException
 
+# 데이터베이스 스키마 업데이트
+Base.metadata.create_all(bind=engine)
+
 # Rate Limiter 설정
 limiter = Limiter(key_func=get_remote_address)
 
