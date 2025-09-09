@@ -27,10 +27,10 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 ### 소셜 로그인
 - **카카오 로그인**: `GET /v1/auth/login/kakao?frontRedirect={url}`
 - **카카오 콜백**: `GET /v1/auth/kakao/callback` (302 리다이렉트)
-- **네이버 로그인**: `GET /v1/auth/login/naver`
-- **네이버 콜백**: `GET /v1/auth/naver/callback`
-- **구글 로그인**: `GET /v1/auth/login/google`
-- **구글 콜백**: `GET /v1/auth/google/callback`
+- **네이버 로그인**: `GET /v1/auth/login/naver?frontRedirect={url}`
+- **네이버 콜백**: `GET /v1/auth/naver/callback` (302 리다이렉트)
+- **구글 로그인**: `GET /v1/auth/login/google?frontRedirect={url}`
+- **구글 콜백**: `GET /v1/auth/google/callback` (302 리다이렉트)
 
 ### JWT 토큰
 - **토큰 검증**: `GET /v1/auth/verify`
@@ -241,11 +241,17 @@ const handleFilterChange = (filterType, value) => { /* 필터 변경 */ }
 
 ## 📱 사용 예시
 
-### 카카오 로그인 요청
+### 소셜 로그인 요청
 ```javascript
-// 올바른 방법 (frontRedirect 파라미터 포함)
+// 카카오 로그인 (올바른 방법)
 const frontRedirect = encodeURIComponent('http://localhost:5173/oauth/callback/kakao');
-const loginUrl = `https://joba-project.onrender.com/v1/auth/login/kakao?frontRedirect=${frontRedirect}`;
+const kakaoLoginUrl = `https://joba-project.onrender.com/v1/auth/login/kakao?frontRedirect=${frontRedirect}`;
+
+// 네이버 로그인 (올바른 방법)
+const naverLoginUrl = `https://joba-project.onrender.com/v1/auth/login/naver?frontRedirect=${frontRedirect}`;
+
+// 구글 로그인 (올바른 방법)
+const googleLoginUrl = `https://joba-project.onrender.com/v1/auth/login/google?frontRedirect=${frontRedirect}`;
 
 // 잘못된 방법 (중복 경로)
 const wrongUrl = 'https://joba-project.onrender.com/v1/auth/auth/login/kakao';

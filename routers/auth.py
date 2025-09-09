@@ -182,84 +182,139 @@ async def kakao_callback(
 
 
 @router.get("/login/naver")
-async def login_naver():
+async def login_naver(frontRedirect: str = Query(None, description="프론트엔드 리다이렉트 URL")):
     """
     네이버 로그인 시작
+    
+    Args:
+        frontRedirect: 로그인 완료 후 리다이렉트할 프론트엔드 URL
     
     Returns:
         RedirectResponse: 네이버 로그인 페이지로 리다이렉트
     """
-    return RedirectResponse(naver_auth.get_login_url())
+    return RedirectResponse(naver_auth.get_login_url(frontRedirect))
 
 
 @router.get("/naver/callback")
-async def naver_callback(code: str, state: str, db: Session = Depends(get_db)):
+async def naver_callback(
+    code: str = Query(..., description="네이버에서 받은 인증 코드"),
+    state: str = Query(None, description="프론트엔드 리다이렉트 URL"),
+    db: Session = Depends(get_db)
+):
     """
     네이버 로그인 콜백 처리
     
     Args:
         code: 네이버에서 받은 인증 코드
-        state: CSRF 방지를 위한 state 값
+        state: 프론트엔드 리다이렉트 URL (frontRedirect)
         db: 데이터베이스 세션
         
     Returns:
-        JSONResponse: 회원가입 필요 여부와 토큰 정보
+        RedirectResponse: 프론트엔드로 302 리다이렉트
     """
-    token = naver_auth.get_access_token(code, state)
-    raw = naver_auth.get_user_info(token)
-    email, pid = extract_email_and_id("naver", raw)
+    # 기본 프론트엔드 URL 설정
+    front_redirect = state or os.getenv("FRONT_DEFAULT_REDIRECT", "http://localhost:5173/oauth/callback/naver")
     
-    if not pid:
-        raise HTTPException(400, "네이버 사용자의 id를 가져올 수 없습니다.")
+    try:
+        token = naver_auth.get_access_token(code, state)
+        raw = naver_auth.get_user_info(token)
+        email, pid = extract_email_and_id("naver", raw)
+        
+        if not pid:
+            raise HTTPException(400, "네이버 사용자의 id를 가져올 수 없습니다.")
 
-    user, _ = get_or_create_minimal(db, provider="naver", provider_user_id=pid, email=email)
+        user, user_id, _ = get_or_create_minimal(db, provider="naver", provider_user_id=pid, email=email)
 
-    if not user.is_onboarded:
-        signup_token = create_signup_token({"uid": user.id})
-        return JSONResponse({"requires_signup": True, "signup_token": signup_token, "email": user.email})
-    
-    access = create_access_token({"sub": str(user.id)})
-    return JSONResponse({"requires_signup": False, "access_token": access, "user_id": user.id})
+        if not user.is_onboarded:
+            # 신규 회원: 회원가입 필요
+            signup_token = create_signup_token({"uid": user_id})
+            params = {
+                "requires_signup": "true",
+                "signup_token": signup_token,
+                "email": user.email or ""
+            }
+            redirect_url = f"{front_redirect}?{urlencode(params)}"
+            return RedirectResponse(redirect_url, status_code=302)
+        
+        # 기존 회원: 로그인 완료
+        access_token = create_access_token({"sub": user_id})
+        params = {"token": access_token}
+        redirect_url = f"{front_redirect}?{urlencode(params)}"
+        return RedirectResponse(redirect_url, status_code=302)
+        
+    except Exception as e:
+        # 에러 발생 시 프론트엔드로 에러 정보와 함께 리다이렉트
+        params = {"error": str(e)}
+        redirect_url = f"{front_redirect}?{urlencode(params)}"
+        return RedirectResponse(redirect_url, status_code=302)
 
 
 @router.get("/login/google")
-async def login_google():
+async def login_google(frontRedirect: str = Query(None, description="프론트엔드 리다이렉트 URL")):
     """
     구글 로그인 시작
+    
+    Args:
+        frontRedirect: 로그인 완료 후 리다이렉트할 프론트엔드 URL
     
     Returns:
         RedirectResponse: 구글 로그인 페이지로 리다이렉트
     """
-    return RedirectResponse(google_auth.get_login_url())
+    return RedirectResponse(google_auth.get_login_url(frontRedirect))
 
 
 @router.get("/google/callback")
-async def google_callback(code: str, db: Session = Depends(get_db)):
+async def google_callback(
+    code: str = Query(..., description="구글에서 받은 인증 코드"),
+    state: str = Query(None, description="프론트엔드 리다이렉트 URL"),
+    db: Session = Depends(get_db)
+):
     """
     구글 로그인 콜백 처리
     
     Args:
         code: 구글에서 받은 인증 코드
+        state: 프론트엔드 리다이렉트 URL (frontRedirect)
         db: 데이터베이스 세션
         
     Returns:
-        JSONResponse: 회원가입 필요 여부와 토큰 정보
+        RedirectResponse: 프론트엔드로 302 리다이렉트
     """
-    token = google_auth.get_access_token(code)
-    raw = google_auth.get_user_info(token)
-    email, pid = extract_email_and_id("google", raw)
+    # 기본 프론트엔드 URL 설정
+    front_redirect = state or os.getenv("FRONT_DEFAULT_REDIRECT", "http://localhost:5173/oauth/callback/google")
     
-    if not pid:
-        raise HTTPException(400, "구글 사용자의 id를 가져올 수 없습니다.")
+    try:
+        token = google_auth.get_access_token(code)
+        raw = google_auth.get_user_info(token)
+        email, pid = extract_email_and_id("google", raw)
+        
+        if not pid:
+            raise HTTPException(400, "구글 사용자의 id를 가져올 수 없습니다.")
 
-    user, _ = get_or_create_minimal(db, provider="google", provider_user_id=pid, email=email)
+        user, user_id, _ = get_or_create_minimal(db, provider="google", provider_user_id=pid, email=email)
 
-    if not user.is_onboarded:
-        signup_token = create_signup_token({"uid": user.id})
-        return JSONResponse({"requires_signup": True, "signup_token": signup_token, "email": user.email})
-    
-    access = create_access_token({"sub": str(user.id)})
-    return JSONResponse({"requires_signup": False, "access_token": access, "user_id": user.id})
+        if not user.is_onboarded:
+            # 신규 회원: 회원가입 필요
+            signup_token = create_signup_token({"uid": user_id})
+            params = {
+                "requires_signup": "true",
+                "signup_token": signup_token,
+                "email": user.email or ""
+            }
+            redirect_url = f"{front_redirect}?{urlencode(params)}"
+            return RedirectResponse(redirect_url, status_code=302)
+        
+        # 기존 회원: 로그인 완료
+        access_token = create_access_token({"sub": user_id})
+        params = {"token": access_token}
+        redirect_url = f"{front_redirect}?{urlencode(params)}"
+        return RedirectResponse(redirect_url, status_code=302)
+        
+    except Exception as e:
+        # 에러 발생 시 프론트엔드로 에러 정보와 함께 리다이렉트
+        params = {"error": str(e)}
+        redirect_url = f"{front_redirect}?{urlencode(params)}"
+        return RedirectResponse(redirect_url, status_code=302)
 
 
 # ==================== 회원가입 API ====================
