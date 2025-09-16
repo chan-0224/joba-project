@@ -5,16 +5,24 @@
 JWT 토큰 기반의 인증 시스템을 사용합니다.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Header, Query
+from fastapi import APIRouter, Depends, HTTPException, Header, Form, File, UploadFile, Query
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db, User
 from services import kakao_auth, naver_auth, google_auth
+from services.gcs_uploader import (
+    upload_file_to_gcs,
+    generate_portfolio_blob_name
+)
 from services.user_service import get_or_create_minimal
 from security import create_access_token, create_signup_token, decode_token
 from pydantic import BaseModel, HttpUrl, field_validator
 from urllib.parse import urlencode
 import os
+from enum import Enum
+from typing import Optional, Annotated, Union
+import inspect
+import logging, traceback
 
 router = APIRouter(prefix="/auth")
 
@@ -345,25 +353,27 @@ async def google_callback(
 
 # ==================== 회원가입 API ====================
 
-class SignupForm(BaseModel):
-    """회원가입 완료를 위한 폼 데이터"""
-    signup_token: str
-    nickname: str
-    track: str        # "frontend"|"backend"|"plan"|"design"|"data"
-    school: str
-    portfolio_url: HttpUrl | None = None
-
-    @field_validator("track")
-    @classmethod
-    def check_track(cls, v):
-        """트랙 값 검증"""
-        allowed = {"frontend", "backend", "plan", "design", "data"}
-        if v not in allowed:
-            raise ValueError(f"track must be one of {allowed}")
-        return v
+# 허용된 트랙 값
+## 공고 모집의 트랙 입력값과 일치시킴
+## 포트폴리오 URL/파일 둘 다 받기 위해 형식 변경
+class TrackEnum(str, Enum):
+    FRONTEND = "프론트엔드"
+    BACKEND = "백엔드"
+    PLANNING = "기획"
+    DESIGN = "디자인"
+    DATA_ANALYSIS = "데이터 분석"
 
 @router.post("/signup")
-async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):
+async def complete_signup(
+    signup_token: Annotated[str, Form(...)],
+    nickname:     Annotated[str, Form(...)],
+    track:        Annotated[TrackEnum, Form(...)],
+    school:       Annotated[str, Form(...)],
+    portfolio_file_raw: Annotated[Optional[Union[UploadFile, str]], File()] = None,
+    portfolio_url:      Annotated[Optional[str], Form()] = None,
+    db: Session = Depends(get_db),
+):
+
     """
     회원가입 완료 (온보딩 정보 입력)
     
@@ -377,28 +387,62 @@ async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):
     Raises:
         HTTPException: 유효하지 않은 토큰, 사용자 없음
     """
+
+    # ---- 정규화 (빈 값/잘못된 타입 흡수) ----
+    portfolio_file: Optional[UploadFile] = None
+    if isinstance(portfolio_file_raw, UploadFile) and portfolio_file_raw.filename:
+        portfolio_file = portfolio_file_raw
+        portfolio_url = None
+    else:
+        portfolio_url = portfolio_url.strip() if portfolio_url else None
+
+
+    # 토큰 검증
     try:
-        payload = decode_token(form.signup_token)
+        payload = decode_token(signup_token)
         if payload.get("typ") != "signup":
             raise ValueError("not signup token")
         user_id = int(payload["uid"])
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired signup token")
-
+    
+    # 사용자 조회
     user = db.query(User).get(user_id)
     if not user:
-        raise HTTPException(404, "User not found")
+        raise HTTPException(status_code=404, detail="User not found")
 
+    # 이미 완료된 경우 바로 access 토큰 발급
     if user.is_onboarded:
-        # 이미 완료된 경우 바로 access 토큰 발급
         access = create_access_token({"sub": str(user.id)})
         return {"access_token": access, "user_id": user.id}
+    
+    
+    # 포트폴리오 처리(파일 우선)
+    stored_url: Optional[str] = None
 
+    if portfolio_file:
+        try:
+            blob_name = generate_portfolio_blob_name(portfolio_file.filename)
+            uploaded_url = upload_file_to_gcs(portfolio_file, blob_name)
+            if inspect.isawaitable(uploaded_url):
+                uploaded_url = await uploaded_url
+            stored_url = uploaded_url
+        except Exception as e:
+            logging.error("GCS 업로드 실패: %s", e)
+            logging.error(traceback.format_exc())
+            raise HTTPException(status_code=500, detail=f"GCS 업로드 실패: {type(e).__name__}: {e}")
+
+    elif portfolio_url:
+        if not portfolio_url.startswith(("http://", "https://")):
+            raise HTTPException(status_code=400, detail="portfolio_url must start with http(s)://")
+        stored_url = portfolio_url
+    
     # 온보딩 정보 업데이트
-    user.nickname = form.nickname
-    user.track = form.track
-    user.school = form.school
-    user.portfolio_url = str(form.portfolio_url) if form.portfolio_url else None
+    user.nickname = nickname
+    user.track = track.value  # Enum 값을 문자열로 저장
+    user.school = school
+    if stored_url is not None:
+        user.portfolio_url = stored_url
     user.is_onboarded = True
 
     db.commit()

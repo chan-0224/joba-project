@@ -3,6 +3,9 @@ import os
 import jwt
 from datetime import datetime, timedelta
 from typing import Optional
+from dotenv import load_dotenv
+
+load_dotenv() # .env 파일에서 환경변수 로드
 
 # JWT 시크릿 키 - 환경변수에서 가져오며, 없으면 에러 발생
 SECRET_KEY = os.getenv("JWT_SECRET")

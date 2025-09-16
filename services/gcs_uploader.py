@@ -46,4 +46,37 @@ def generate_unique_blob_name(original_filename: str) -> str:
 def generate_portfolio_blob_name(original_filename: str) -> str:
     """포트폴리오 파일용 고유 이름 생성"""
     ext = os.path.splitext(original_filename)[1]
-    return f"applications/portfolios/{uuid.uuid4().hex}{ext}" 
+    return f"applications/portfolios/{uuid.uuid4().hex}{ext}"
+
+# ---프로필용(프로필 사진, 배경사진, 시간표)---
+def generate_profile_image_blob_name(user_id: str, kind: str, original_filename: str) -> str:
+    ext = os.path.splitext(original_filename)[1] or ".png"
+    return f"profiles/{user_id}/{kind}/{uuid.uuid4().hex}{ext}"
+
+def upload_profile_image(file: UploadFile, user_id: str, kind: str) -> str:
+    validate_image(file)
+    validate_file_size(file)
+
+    dest = generate_profile_image_blob_name(user_id, kind, file.filename)
+    url = upload_file_to_gcs(file, dest)
+
+    try:
+        if getattr(settings, "GCS_PUBLIC_READ", True):
+            blob = bucket.blob(dest)
+            try:
+                blob.make_public()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    return url
+
+def upload_avatar(file: UploadFile, user_id: str) -> str:
+    return upload_profile_image(file, user_id, "avatars")
+
+def upload_cover(file: UploadFile, user_id: str) -> str:
+    return upload_profile_image(file, user_id, "covers")
+
+def upload_timetable(file: UploadFile, user_id: str) -> str:
+    return upload_profile_image(file, user_id, "timetables")

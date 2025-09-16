@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, func, ForeignKey, UniqueConstraint, Index
+from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, func, ForeignKey, UniqueConstraint, Index, Date
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker,relationship
 from config import settings
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -125,11 +125,31 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now(), index=True)  # 인덱스 추가
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
+    # 프로필 관련 컬럼들 (직접 프로필에서 관리하는 요소들)
+    avatar_url = Column(String(500))     # 프로필 사진 URL
+    cover_url = Column(String(500))      # 커버 사진 URL
+    timetable_url = Column(String(500)) # 시간표 이미지 URL
+
+    careers = relationship("ProfileCareer", back_populates="user", cascade="all, delete-orphan")
+
     # 복합 인덱스 추가
     __table_args__ = (
         Index('idx_users_track_onboarded', 'track', 'is_onboarded'),
         Index('idx_users_school_onboarded', 'school', 'is_onboarded'),
     )
+
+
+class ProfileCareer(Base):
+    __tablename__ = "profile_careers"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    year = Column(Integer, nullable=False)
+    description = Column(Text, nullable=False)
+
+
+    user = relationship("User", back_populates="careers")
+
 
 # DB 세션 의존성
 from typing import Generator

@@ -209,4 +209,27 @@ class ApplicationStatusResponse(BaseModel):
     class Config:
         from_attributes = True
 
- 
+# ----- Profile 관련 스키마 -----
+class RecentProjectResponse(BaseModel):  # 최근 프로젝트
+    id: int
+    title: str
+    image_url: str
+
+    class Config:
+        orm_mode = True
+
+
+class UserProfileResponse(BaseModel):  # 프로필 조회 응답
+    user_id: str
+    email: str
+    track: Optional[str] = None
+    school: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    avatar_url: Optional[str] = None
+    cover_url: Optional[str] = None
+    timetable_url: Optional[str] = None
+    careers: Dict[str, List[dict]]
+    recent_projects: List[RecentProjectResponse]
+
+    class Config:
+        orm_mode = True
