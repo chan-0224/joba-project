@@ -42,8 +42,7 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 - **구글**: `/v1/auth/login/google` → `/v1/auth/google/callback`
 
 ### JWT 토큰
-- **토큰 검증**: `GET /v1/auth/verify`
-- **토큰 갱신**: `POST /v1/auth/refresh`
+- **사용자 정보 조회**: `GET /v1/auth/me` (토큰 검증 포함)
 
 ## 📝 주요 기능
 

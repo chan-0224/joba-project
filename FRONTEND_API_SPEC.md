@@ -34,8 +34,7 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 - **구글 콜백**: `GET /v1/auth/google/callback` (302 리다이렉트)
 
 ### JWT 토큰
-- **토큰 검증**: `GET /v1/auth/verify`
-- **토큰 갱신**: `POST /v1/auth/refresh`
+- **사용자 정보 조회**: `GET /v1/auth/me` (토큰 검증 포함)
 
 ## 📝 공고 (Posts)
 
@@ -164,8 +163,7 @@ const uploadTimetable = async (userId, timetableFile) => { /* 시간표 업로�
 const kakaoLogin = () => { /* 카카오 로그인 */ }
 const naverLogin = () => { /* 네이버 로그인 */ }
 const googleLogin = () => { /* 구글 로그인 */ }
-const verifyToken = async () => { /* 토큰 검증 */ }
-const refreshToken = async () => { /* 토큰 갱신 */ }
+const getCurrentUser = async () => { /* 현재 사용자 정보 조회 (토큰 검증 포함) */ }
 const logout = () => { /* 로그아웃 */ }
 ```
 
