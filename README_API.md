@@ -16,6 +16,7 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 ├── /auth          # 인증 (소셜 로그인, JWT)
 ├── /posts         # 공고 관리
 ├── /applications  # 지원서 관리
+├── /profile       # 프로필 관리
 └── /posts/{id}/questions  # 공고별 질문
 ```
 
@@ -25,6 +26,7 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 ### 올바른 URL 예시:
 - ✅ `https://joba-project.onrender.com/v1/posts` (공고 목록)
 - ✅ `https://joba-project.onrender.com/v1/applications` (지원서 목록)
+- ✅ `https://joba-project.onrender.com/v1/profile/{user_id}` (프로필 조회)
 - ✅ `https://joba-project.onrender.com/v1/auth/login/kakao` (카카오 로그인)
 
 ### 잘못된 URL 예시 (중복 경로):
@@ -70,6 +72,11 @@ const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 - **목록**: `GET /v1/applications`
 - **상세**: `GET /v1/applications/{id}`
 - **상태 변경**: `PUT /v1/applications/{id}/status`
+
+### 프로필 관리
+- **조회**: `GET /v1/profile/{user_id}`
+- **수정**: `PUT /v1/profile/{user_id}` (이미지 업로드 포함)
+- **시간표 업로드**: `POST /v1/profile/{user_id}/upload/timetable`
 
 ## 🚀 CORS 설정
 백엔드는 다음 오리진에서의 요청을 허용합니다:

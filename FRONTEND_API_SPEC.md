@@ -15,6 +15,7 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 ### 올바른 URL 예시:
 - ✅ `https://joba-project.onrender.com/v1/posts` (공고 목록)
 - ✅ `https://joba-project.onrender.com/v1/applications` (지원서 목록)
+- ✅ `https://joba-project.onrender.com/v1/profile/{user_id}` (프로필 조회)
 - ✅ `https://joba-project.onrender.com/v1/auth/login/kakao` (카카오 로그인)
 
 ### 잘못된 URL 예시:
@@ -66,6 +67,13 @@ const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 - **지원서 상세**: `GET /v1/applications/{application_id}`
 - **지원서 상태 변경**: `PUT /v1/applications/{application_id}/status`
 
+## 👤 프로필 (Profile)
+
+### 프로필 관리
+- **프로필 조회**: `GET /v1/profile/{user_id}`
+- **프로필 수정**: `PUT /v1/profile/{user_id}` (Form 데이터 + 이미지 업로드)
+- **시간표 업로드**: `POST /v1/profile/{user_id}/upload/timetable`
+
 ## 🚀 CORS 설정
 백엔드는 다음 오리진에서의 요청을 허용합니다:
 - `http://localhost:5173` (로컬 개발용)
@@ -85,6 +93,7 @@ const EditPostPage = () => { /* 공고 수정 페이지 */ }
 const ApplicationsPage = () => { /* 지원서 목록 페이지 */ }
 const ApplicationDetailPage = () => { /* 지원서 상세 페이지 */ }
 const ProfilePage = () => { /* 사용자 프로필 페이지 */ }
+const ProfileEditPage = () => { /* 프로필 수정 페이지 */ }
 const LoginPage = () => { /* 로그인 페이지 */ }
 ```
 
@@ -107,6 +116,14 @@ const ApplicationStatus = ({ status }) => { /* 지원서 상태 표시 */ }
 const QuestionList = ({ questions }) => { /* 질문 목록 */ }
 const QuestionItem = ({ question, onChange }) => { /* 개별 질문 */ }
 const QuestionForm = ({ onSubmit }) => { /* 질문 작성 폼 */ }
+
+// 프로필 관련 컴포넌트
+const ProfileCard = ({ profile }) => { /* 프로필 카드 */ }
+const ProfileForm = ({ profile, onSubmit }) => { /* 프로필 수정 폼 */ }
+const CareerList = ({ careers }) => { /* 경력 목록 */ }
+const CareerForm = ({ career, onSubmit, onDelete }) => { /* 경력 폼 */ }
+const ProfileImage = ({ imageUrl, type }) => { /* 프로필 이미지 (avatar, cover, timetable) */ }
+const RecentProjects = ({ projects }) => { /* 최근 프로젝트 목록 */ }
 
 // 인증 관련 컴포넌트
 const LoginButtons = () => { /* 소셜 로그인 버튼들 */ }
@@ -137,6 +154,11 @@ const updateApplicationStatus = async (id, status) => { /* 지원서 상태 변�
 // 공고 질문 관련 API 함수
 const getPostQuestions = async (postId) => { /* 공고 질문 조회 */ }
 const createPostQuestions = async (postId, questions) => { /* 공고 질문 생성 */ }
+
+// 프로필 관련 API 함수
+const getProfile = async (userId) => { /* 프로필 조회 */ }
+const updateProfile = async (userId, profileData) => { /* 프로필 수정 */ }
+const uploadTimetable = async (userId, timetableFile) => { /* 시간표 업로드 */ }
 
 // 인증 관련 API 함수
 const kakaoLogin = () => { /* 카카오 로그인 */ }
@@ -171,6 +193,12 @@ const [isAuthenticated, setIsAuthenticated] = useState(false) // 인증 상태
 const [authToken, setAuthToken] = useState(null)          // 인증 토큰
 const [isLoadingAuth, setIsLoadingAuth] = useState(false) // 인증 로딩 상태
 
+// 프로필 관련 상태
+const [profile, setProfile] = useState(null)              // 프로필 정보
+const [careers, setCareers] = useState([])                // 경력 목록
+const [recentProjects, setRecentProjects] = useState([])  // 최근 프로젝트
+const [isUpdatingProfile, setIsUpdatingProfile] = useState(false) // 프로필 업데이트 중
+
 // UI 상태
 const [isModalOpen, setIsModalOpen] = useState(false)     // 모달 열림 상태
 const [currentPage, setCurrentPage] = useState(1)         // 현재 페이지
@@ -192,6 +220,13 @@ const handlePostSort = (sortBy) => { /* 공고 정렬 처리 */ }
 const handleSubmitApplication = async (applicationData) => { /* 지원서 제출 처리 */ }
 const handleUpdateApplicationStatus = async (id, status) => { /* 지원서 상태 변경 처리 */ }
 const handleApplicationCancel = async (id) => { /* 지원서 취소 처리 */ }
+
+// 프로필 관련 이벤트 핸들러
+const handleProfileUpdate = async (profileData) => { /* 프로필 수정 처리 */ }
+const handleCareerAdd = (careerData) => { /* 경력 추가 처리 */ }
+const handleCareerEdit = (id, careerData) => { /* 경력 수정 처리 */ }
+const handleCareerDelete = (id) => { /* 경력 삭제 처리 */ }
+const handleImageUpload = async (file, type) => { /* 이미지 업로드 처리 */ }
 
 // 인증 관련 이벤트 핸들러
 const handleKakaoLogin = () => { /* 카카오 로그인 처리 */ }
@@ -226,6 +261,14 @@ const handleFilterChange = (filterType, value) => { /* 필터 변경 */ }
 .question-list { /* 질문 목록 스타일 */ }
 .question-item { /* 질문 아이템 스타일 */ }
 .question-form { /* 질문 폼 스타일 */ }
+
+/* 프로필 관련 스타일 */
+.profile-card { /* 프로필 카드 스타일 */ }
+.profile-form { /* 프로필 폼 스타일 */ }
+.career-list { /* 경력 목록 스타일 */ }
+.career-item { /* 경력 아이템 스타일 */ }
+.profile-image { /* 프로필 이미지 스타일 */ }
+.recent-projects { /* 최근 프로젝트 스타일 */ }
 
 /* 인증 관련 스타일 */
 .login-buttons { /* 로그인 버튼들 스타일 */ }
@@ -302,6 +345,77 @@ const PostCreateForm = () => {
 
 // 잘못된 방법 (중복 경로)
 const wrongUrl = 'https://joba-project.onrender.com/v1/posts/posts';
+```
+
+### 프로필 조회 요청
+```javascript
+// 올바른 방법
+const profileUrl = 'https://joba-project.onrender.com/v1/profile/kakao_12345';
+
+// 응답 예시
+{
+  "user_id": "kakao_12345",
+  "email": "user@example.com",
+  "track": "프론트엔드",
+  "school": "한국대학교",
+  "portfolio_url": "https://portfolio.example.com",
+  "avatar_url": "https://storage.googleapis.com/joba-bucket/profiles/kakao_12345/avatars/abc123.jpg",
+  "cover_url": "https://storage.googleapis.com/joba-bucket/profiles/kakao_12345/covers/def456.jpg",
+  "timetable_url": "https://storage.googleapis.com/joba-bucket/profiles/kakao_12345/timetables/ghi789.jpg",
+  "careers": {
+    "2024": [
+      {"id": 1, "description": "SSAFY 11기 수료"}
+    ],
+    "2023": [
+      {"id": 2, "description": "웹 개발 부트캠프 수료"}
+    ]
+  },
+  "recent_projects": [
+    {
+      "id": 15,
+      "title": "React 쇼핑몰 프로젝트",
+      "image_url": "https://storage.googleapis.com/joba-bucket/posts/images/project1.jpg"
+    }
+  ]
+}
+```
+
+### 프로필 수정 요청 (Form 데이터)
+```javascript
+// 올바른 방법 - FormData 사용 (이미지 포함)
+const updateProfileWithImage = async (userId, profileData) => {
+  const formData = new FormData();
+  
+  // 텍스트 데이터
+  if (profileData.track) formData.append('track', profileData.track);
+  if (profileData.school) formData.append('school', profileData.school);
+  if (profileData.portfolio_url) formData.append('portfolio_url', profileData.portfolio_url);
+  
+  // 경력 데이터 (JSON 문자열)
+  if (profileData.careers) {
+    formData.append('careers', JSON.stringify(profileData.careers));
+  }
+  
+  // 이미지 파일들
+  if (profileData.avatar) formData.append('avatar', profileData.avatar);
+  if (profileData.cover) formData.append('cover', profileData.cover);
+  
+  const response = await fetch(`/v1/profile/${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${authToken}`
+    },
+    body: formData
+  });
+  
+  return response.json();
+};
+
+// 경력 데이터 예시
+const careersData = [
+  { "id": 1, "year": 2024, "description": "SSAFY 11기 수료" },
+  { "year": 2023, "description": "웹 개발 부트캠프 수료" } // id 없으면 새로 생성
+];
 ```
 
 ## 🔧 환경변수 설정
