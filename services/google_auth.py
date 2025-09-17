@@ -6,16 +6,22 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
 
-def get_login_url():
-    return (
-        "https://accounts.google.com/o/oauth2/v2/auth"
-        f"?client_id={GOOGLE_CLIENT_ID}"
-        "&response_type=code"
-        f"&redirect_uri={GOOGLE_REDIRECT_URI}"
-        "&scope=email"
-        "&access_type=offline"
-        "&prompt=consent"
-    )
+def get_login_url(front_redirect: str = None):
+    """구글 로그인 URL 생성"""
+    # frontRedirect를 state 파라미터로 전달
+    params = [
+        f"client_id={GOOGLE_CLIENT_ID}",
+        "response_type=code",
+        f"redirect_uri={GOOGLE_REDIRECT_URI}",
+        "scope=email",
+        "access_type=offline",
+        "prompt=consent"
+    ]
+    
+    if front_redirect:
+        params.append(f"state={front_redirect}")
+    
+    return "https://accounts.google.com/o/oauth2/v2/auth?" + "&".join(params)
 
 
 def get_access_token(code: str):

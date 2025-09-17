@@ -7,8 +7,10 @@ NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
 NAVER_REDIRECT_URI = os.getenv("NAVER_REDIRECT_URI")
 NAVER_STATE = os.getenv("NAVER_STATE", secrets.token_urlsafe(32))
 
-def get_login_url():
-    state = NAVER_STATE
+def get_login_url(front_redirect: str = None):
+    """네이버 로그인 URL 생성"""
+    # frontRedirect가 있으면 state에 포함, 없으면 기본값 사용
+    state = front_redirect if front_redirect else NAVER_STATE
     return (
         f"https://nid.naver.com/oauth2.0/authorize"
         f"?response_type=code"
