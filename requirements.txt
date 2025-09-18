@@ -11,3 +11,4 @@ httpx
 python-jose
 PyJWT
 slowapi
+email-validator
