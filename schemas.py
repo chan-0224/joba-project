@@ -216,7 +216,7 @@ class RecentProjectResponse(BaseModel):  # 최근 프로젝트
     image_url: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserProfileResponse(BaseModel):  # 프로필 조회 응답
@@ -232,4 +232,4 @@ class UserProfileResponse(BaseModel):  # 프로필 조회 응답
     recent_projects: List[RecentProjectResponse]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
