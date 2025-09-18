@@ -36,14 +36,17 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 ### JWT 토큰
 - **사용자 정보 조회**: `GET /v1/auth/me` (토큰 검증 포함)
 
+### 회원가입
+- **회원가입 완료**: `POST /v1/auth/signup` (온보딩 정보 입력)
+
 ## 📝 공고 (Posts)
 
 ### 공고 관리
 - **공고 생성**: `POST /v1/posts` (이미지 업로드 포함)
-- **공고 목록**: `GET /v1/posts` (지원자 수, 모집된 인원 수, 모집 상태 포함)
+- **공고 목록**: `GET /v1/posts` (필터링, 정렬, 검색, 페이지네이션 지원)
 - **공고 상세**: `GET /v1/posts/{post_id}` (지원자 수, 모집된 인원 수, 모집 상태 포함)
-- **공고 수정**: `PUT /v1/posts/{post_id}`
-- **공고 삭제**: `DELETE /v1/posts/{post_id}`
+- **공고 수정**: `PUT /v1/posts/{post_id}` (미구현)
+- **공고 삭제**: `DELETE /v1/posts/{post_id}` (미구현)
 
 ### 공고 옵션 (프론트엔드 하드코딩)
 ⚠️ **중요**: 공고 작성 시 사용할 옵션들은 백엔드 API에서 제공하지 않습니다.
@@ -54,17 +57,24 @@ const RECRUITMENT_FIELDS = ["프론트엔드", "백엔드", "기획", "디자인
 const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 ```
 
-### 공고 질문
-- **질문 생성**: `POST /v1/posts/{post_id}/questions`
+### 공고 질문 (커스터마이징)
+- **질문 생성**: `POST /v1/posts/{post_id}/questions` (공고 작성자만)
 - **질문 조회**: `GET /v1/posts/{post_id}/questions`
+
+⚠️ **질문 타입**: TEXT, TEXTAREA, CHOICES, ATTACHMENT 지원
+⚠️ **덮어쓰기**: 기존 질문 삭제 후 새로 생성
 
 ## 📋 지원서 (Applications)
 
 ### 지원서 관리
-- **지원서 제출**: `POST /v1/applications`
-- **지원서 목록**: `GET /v1/applications`
-- **지원서 상세**: `GET /v1/applications/{application_id}`
-- **지원서 상태 변경**: `PUT /v1/applications/{application_id}/status`
+- **지원서 제출**: `POST /v1/applications` (커스터마이징된 질문 답변 포함)
+- **지원서 상세 조회**: `GET /v1/applications/{application_id}` (본인만)
+- **지원서 상세 조회 (모집자용)**: `GET /v1/applications/{application_id}/detail`
+- **지원서 상태 변경**: `PATCH /v1/applications/{application_id}/status` (모집자만)
+- **지원서 취소**: `PATCH /v1/applications/{application_id}/cancel` (지원자만)
+
+### 지원자 관리 (모집자용)
+- **공고별 지원자 목록**: `GET /v1/posts/{post_id}/applications` (페이지네이션, 필터링, 정렬 지원)
 
 ## 👤 프로필 (Profile)
 
@@ -145,10 +155,12 @@ const RECRUITMENT_FIELDS = ["프론트엔드", "백엔드", "기획", "디자인
 const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 
 // 지원서 관련 API 함수
-const getApplications = async () => { /* 지원서 목록 조회 */ }
-const getApplication = async (id) => { /* 지원서 상세 조회 */ }
-const submitApplication = async (applicationData) => { /* 지원서 제출 */ }
-const updateApplicationStatus = async (id, status) => { /* 지원서 상태 변경 */ }
+const getApplication = async (id) => { /* 지원서 상세 조회 (본인만) */ }
+const getApplicationDetail = async (id) => { /* 지원서 상세 조회 (모집자용) */ }
+const getPostApplications = async (postId, params) => { /* 공고별 지원자 목록 (모집자용) */ }
+const submitApplication = async (applicationData, files) => { /* 지원서 제출 */ }
+const updateApplicationStatus = async (id, status) => { /* 지원서 상태 변경 (모집자만) */ }
+const cancelApplication = async (id) => { /* 지원서 취소 (지원자만) */ }
 
 // 공고 질문 관련 API 함수
 const getPostQuestions = async (postId) => { /* 공고 질문 조회 */ }
@@ -163,6 +175,7 @@ const uploadTimetable = async (userId, timetableFile) => { /* 시간표 업로�
 const kakaoLogin = () => { /* 카카오 로그인 */ }
 const naverLogin = () => { /* 네이버 로그인 */ }
 const googleLogin = () => { /* 구글 로그인 */ }
+const completeSignup = async (signupData) => { /* 회원가입 완료 */ }
 const getCurrentUser = async () => { /* 현재 사용자 정보 조회 (토큰 검증 포함) */ }
 const logout = () => { /* 로그아웃 */ }
 ```
@@ -280,7 +293,46 @@ const handleFilterChange = (filterType, value) => { /* 필터 변경 */ }
 .disabled { /* 비활성화 상태 스타일 */ }
 ```
 
+## 📊 지원서 상태 관리
+
+### 지원서 상태 종류
+- **제출됨**: 초기 지원 상태
+- **열람됨**: 모집자가 상세 조회한 상태 (자동 변경 - 현재 미사용)
+- **합격**: 모집자가 합격 처리
+- **불합격**: 모집자가 불합격 처리  
+- **취소됨**: 지원자가 직접 취소
+
+### 상태 변경 규칙
+- 지원자: "제출됨" → "취소됨"만 가능
+- 모집자: "제출됨" → "합격"/"불합격" 가능
+- 최종 상태("합격", "불합격")에서는 더 이상 변경 불가
+
 ## 📱 사용 예시
+
+### 회원가입 플로우
+```javascript
+// 1. 소셜 로그인 후 신규 사용자인 경우
+// frontRedirect에서 requires_signup=true와 signup_token 받음
+
+// 2. 회원가입 완료 요청 (프론트 신규 포맷)
+const signupData = {
+  signup_token: token,         // 소셜 로그인 시 발급받은 토큰
+  email: email,                // 미리 채워진 이메일(선택)
+  name: name,                  // 사용자가 직접 입력한 이름 → nickname
+  field: field,                // 사용자가 선택한 트랙 → track (frontend|backend|plan|design|data)
+  university: univ,            // 사용자가 직접 입력한 학교 → school
+  portfolio: portfolio || null // 포트폴리오(선택) → portfolio_url
+};
+
+const response = await fetch('/v1/auth/signup', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(signupData)
+});
+
+const result = await response.json();
+// { "access_token": "jwt토큰", "user_id": "사용자ID" }
+```
 
 ### 소셜 로그인 요청
 ```javascript
@@ -298,10 +350,23 @@ const googleLoginUrl = `https://joba-project.onrender.com/v1/auth/login/google?f
 const wrongUrl = 'https://joba-project.onrender.com/v1/auth/auth/login/kakao';
 ```
 
-### 공고 목록 요청
+### 공고 목록 요청 (필터링 및 정렬)
 ```javascript
-// 올바른 방법
+// 기본 목록 조회
 const postsUrl = 'https://joba-project.onrender.com/v1/posts';
+
+// 필터링 및 정렬 옵션
+const params = new URLSearchParams({
+  sort: '최신순', // 허용값: 최신순|인기순|랜덤순
+  recruitment_field: '프론트엔드', // 선택사항
+  recruitment_headcount: '3~5인', // 선택사항
+  school_name: '서울대학교', // 선택사항
+  q: '검색키워드', // 선택사항
+  page: '1',
+  size: '10'
+});
+
+const filteredUrl = `${postsUrl}?${params}`;
 
 // 응답 예시
 {
@@ -309,40 +374,57 @@ const postsUrl = 'https://joba-project.onrender.com/v1/posts';
   "posts": [
     {
       "id": 1,
+      "user_id": "kakao_123456789",
       "title": "프론트엔드 개발자 모집",
+      "recruitment_field": "프론트엔드",
       "recruitment_headcount": "3~5인",
       "application_count": 8,
       "recruited_count": 2,
-      "recruitment_status": "모집중"
+      "recruitment_status": "모집중",
+      "image_url": "https://storage.googleapis.com/...",
+      "deadline": "2024-12-31T23:59:59",
+      "created_at": "2024-01-01T00:00:00"
     }
   ]
 }
 
-// 공고 옵션 상수 (프론트엔드에서 하드코딩)
-// ⚠️ 중요: 이 값들은 백엔드 API에서 제공하지 않으므로 프론트엔드에서 상수로 정의하여 사용하세요.
-const RECRUITMENT_FIELDS = ["프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"];
-const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
-
-// 사용 예시
-const PostCreateForm = () => {
-  return (
-    <form>
-      <select name="recruitment_field">
-        {RECRUITMENT_FIELDS.map(field => (
-          <option key={field} value={field}>{field}</option>
-        ))}
-      </select>
-      <select name="recruitment_headcount">
-        {RECRUITMENT_HEADCOUNTS.map(headcount => (
-          <option key={headcount} value={headcount}>{headcount}</option>
-        ))}
-      </select>
-    </form>
-  );
-};
-
 // 잘못된 방법 (중복 경로)
 const wrongUrl = 'https://joba-project.onrender.com/v1/posts/posts';
+```
+
+### 지원서 제출 요청
+```javascript
+// 1. 공고 질문 조회
+const questionsResponse = await fetch('/v1/posts/1/questions');
+const questions = await questionsResponse.json();
+
+// 2. 지원서 데이터 준비
+const applicationData = {
+  post_id: 1,
+  answers: [
+    {
+      post_question_id: 1,
+      answer_content: "저는 React와 TypeScript에 능숙합니다."
+    },
+    {
+      post_question_id: 2,
+      answer_content: "portfolio.pdf" // ATTACHMENT 타입인 경우 파일명
+    }
+  ]
+};
+
+// 3. FormData로 파일과 함께 전송 (ATTACHMENT 타입 질문이 있는 경우)
+const formData = new FormData();
+formData.append('application_data', JSON.stringify(applicationData));
+formData.append('portfolio_files', portfolioFile); // 파일 객체
+
+const response = await fetch('/v1/applications', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${authToken}`
+  },
+  body: formData
+});
 ```
 
 ### 프로필 조회 요청

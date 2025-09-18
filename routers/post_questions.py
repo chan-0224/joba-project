@@ -11,6 +11,7 @@ from typing import List
 from database import get_db, Post, PostQuestion, User
 from schemas import PostQuestionsRequest, PostQuestionResponse, PostQuestionCreate
 from routers.auth import get_current_user
+from services.user_service import get_user_id_from_user
 from sqlalchemy import and_
 
 router = APIRouter()
@@ -26,20 +27,30 @@ async def create_post_questions(
     """
     공고에 대한 커스터마이징 질문들을 생성합니다.
     
-    기존 질문이 있다면 모두 삭제하고 새로운 질문으로 덮어씁니다.
-    공고 작성자만 질문을 설정할 수 있습니다.
+    **JWT 인증 필요** - 공고 작성자만 질문 설정 가능
     
     Args:
         post_id: 질문을 설정할 공고 ID
-        questions_request: 생성할 질문 목록
+        questions_request: 생성할 질문 목록 (PostQuestionsRequest)
         current_user: 현재 인증된 사용자
         db: 데이터베이스 세션
         
     Returns:
         dict: 생성된 질문 개수
+        - message: 성공 메시지
+        - questions_count: 생성된 질문 개수
         
     Raises:
-        HTTPException: 공고 없음, 권한 없음, CHOICES 타입 질문에 선택지 없음
+        HTTPException: 
+            - 404: 공고를 찾을 수 없음
+            - 403: 권한 없음 (공고 작성자가 아님)
+            - 400: CHOICES 타입 질문에 선택지 없음
+    
+    Note:
+        - **덮어쓰기 방식**: 기존 질문 모두 삭제 후 새로 생성
+        - 권한 검증: post.user_id == get_user_id_from_user(current_user)
+        - CHOICES 타입 질문은 반드시 choices 필드 필요
+        - 질문 타입: TEXT, TEXTAREA, CHOICES, ATTACHMENT 지원
     """
     # 1. 공고 존재 여부 확인
     post = db.query(Post).filter(Post.id == post_id).first()
@@ -50,7 +61,7 @@ async def create_post_questions(
         )
     
     # 2. 권한 검증 - 공고 작성자만 질문 설정 가능
-    if post.user_id != current_user.id:
+    if post.user_id != get_user_id_from_user(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="공고 작성자만 질문을 설정할 수 있습니다."
@@ -98,7 +109,7 @@ async def get_post_questions(
     """
     공고의 질문 목록을 조회합니다.
     
-    질문은 생성 순서대로 정렬되어 반환됩니다.
+    **인증 불필요** - 모든 사용자가 공고의 질문 목록을 조회할 수 있음
     
     Args:
         post_id: 조회할 공고 ID
@@ -106,9 +117,17 @@ async def get_post_questions(
         
     Returns:
         List[PostQuestionResponse]: 질문 목록
+        - 질문 ID, 타입, 내용, 필수 여부, 선택지 등 포함
+        - 생성 순서대로 정렬 (created_at 기준)
         
     Raises:
-        HTTPException: 공고를 찾을 수 없음
+        HTTPException: 
+            - 404: 공고를 찾을 수 없음
+    
+    Note:
+        - 지원서 작성 시 필요한 질문 정보 제공
+        - 공고 존재 여부만 확인, 권한 검증 없음
+        - CHOICES 타입 질문의 경우 choices 필드 포함
     """
     # 1. 공고 존재 여부 확인
     post = db.query(Post).filter(Post.id == post_id).first()

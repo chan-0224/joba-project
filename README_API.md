@@ -41,17 +41,20 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 - **네이버**: `/v1/auth/login/naver` → `/v1/auth/naver/callback`
 - **구글**: `/v1/auth/login/google` → `/v1/auth/google/callback`
 
-### JWT 토큰
+### JWT 토큰  
 - **사용자 정보 조회**: `GET /v1/auth/me` (토큰 검증 포함)
+
+### 회원가입
+- **회원가입 완료**: `POST /v1/auth/signup` (온보딩 정보 입력)
 
 ## 📝 주요 기능
 
 ### 공고 관리
 - **생성**: `POST /v1/posts` (이미지 업로드 포함)
-- **목록**: `GET /v1/posts` (지원자 수, 모집된 인원 수, 모집 상태 포함)
+- **목록**: `GET /v1/posts` (필터링, 정렬, 검색, 페이지네이션 지원)
 - **상세**: `GET /v1/posts/{id}` (지원자 수, 모집된 인원 수, 모집 상태 포함)
-- **수정**: `PUT /v1/posts/{id}`
-- **삭제**: `DELETE /v1/posts/{id}`
+- **수정**: `PUT /v1/posts/{id}` (미구현)
+- **삭제**: `DELETE /v1/posts/{id}` (미구현)
 
 ### 공고 옵션 (프론트엔드 하드코딩)
 ⚠️ **중요**: 공고 작성 시 사용할 옵션들은 백엔드 API에서 제공하지 않습니다.
@@ -62,15 +65,20 @@ const RECRUITMENT_FIELDS = ["프론트엔드", "백엔드", "기획", "디자인
 const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 ```
 
-### 공고 질문
-- **생성**: `POST /v1/posts/{id}/questions`
+### 공고 질문 (커스터마이징)
+- **생성**: `POST /v1/posts/{id}/questions` (공고 작성자만, 덮어쓰기 방식)
 - **조회**: `GET /v1/posts/{id}/questions`
+- **지원 타입**: TEXT, TEXTAREA, CHOICES, ATTACHMENT
 
 ### 지원서 관리
-- **제출**: `POST /v1/applications`
-- **목록**: `GET /v1/applications`
-- **상세**: `GET /v1/applications/{id}`
-- **상태 변경**: `PUT /v1/applications/{id}/status`
+- **제출**: `POST /v1/applications` (커스터마이징된 질문 답변 + 파일 업로드)
+- **상세 조회**: `GET /v1/applications/{id}` (본인만)
+- **상세 조회 (모집자용)**: `GET /v1/applications/{id}/detail`
+- **상태 변경**: `PATCH /v1/applications/{id}/status` (모집자만)
+- **지원 취소**: `PATCH /v1/applications/{id}/cancel` (지원자만)
+
+### 지원자 관리 (모집자용)
+- **공고별 지원자 목록**: `GET /v1/posts/{id}/applications` (페이지네이션, 필터링, 정렬)
 
 ### 프로필 관리
 - **조회**: `GET /v1/profile/{user_id}`
@@ -93,12 +101,27 @@ const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 - `JWT_SECRET`: JWT 서명용 시크릿 키
 - 소셜 로그인 관련 키들 (카카오, 네이버, 구글)
 
-## 📊 공고 응답 데이터
+## 📊 데이터 구조
+
+### 공고 응답 데이터
 - `application_count`: 지원자 수
-- `recruited_count`: 모집된 인원 수
-- `recruitment_status`: 모집 상태
+- `recruited_count`: 모집된 인원 수 (합격자 수)
+- `recruitment_status`: 모집 상태 ("모집중" / "마감")
 - `recruitment_headcount`: 모집 인원
 - `user_id`: 소셜 ID 기반 사용자 식별자 (예: `kakao_123456789`)
+
+### 지원서 상태
+- `제출됨`: 초기 지원 상태
+- `열람됨`: 모집자가 상세 조회 (현재 미사용)
+- `합격`: 모집자가 합격 처리
+- `불합격`: 모집자가 불합격 처리
+- `취소됨`: 지원자가 직접 취소
+
+### 질문 타입
+- `TEXT`: 단일 라인 텍스트 입력
+- `TEXTAREA`: 여러 라인 텍스트 입력
+- `CHOICES`: 선택지 중 선택
+- `ATTACHMENT`: 파일 첨부
 
 ## 📚 API 문서
 - **Swagger UI**: `https://joba-project.onrender.com/docs`
@@ -120,6 +143,14 @@ const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 ```bash
 VITE_API_BASE_URL=https://joba-project.onrender.com/v1
 ```
+
+### 정렬 파라미터 사용
+공고 목록 조회 시 정렬 파라미터는 한글 값을 사용합니다.
+
+허용값:
+- 최신순
+- 인기순
+- 랜덤순
 
 **잘못된 환경변수** (중복 경로 포함):
 ```bash

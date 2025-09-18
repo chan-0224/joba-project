@@ -12,7 +12,7 @@ from database import get_db, User
 from services import kakao_auth, naver_auth, google_auth
 from services.user_service import get_or_create_minimal
 from security import create_access_token, create_signup_token, decode_token
-from pydantic import BaseModel, HttpUrl, field_validator
+from pydantic import BaseModel, HttpUrl, field_validator, AliasChoices, EmailStr, Field
 from urllib.parse import urlencode
 import os
 
@@ -60,11 +60,23 @@ async def me(current_user: User = Depends(get_current_user)):
     """
     현재 로그인된 사용자 정보 조회
     
+    **JWT 인증 필요** - Bearer 토큰으로 사용자 인증 후 정보 반환
+    
     Args:
-        current_user: 현재 인증된 사용자
+        current_user: 현재 인증된 사용자 (get_current_user dependency)
         
     Returns:
-        dict: 사용자 정보 (ID, 이메일, 닉네임, 트랙, 온보딩 상태)
+        dict: 사용자 정보
+        - id: DB 내부 ID (integer)
+        - user_id: 소셜 로그인 기반 문자열 ID (예: "kakao_12345")
+        - email: 이메일 주소
+        - nickname: 닉네임
+        - track: 트랙 정보
+        - is_onboarded: 온보딩 완료 여부
+    
+    Note:
+        - user_id는 소셜 로그인 제공자에 따라 동적 생성
+        - 토큰 검증 실패 시 401 에러 반환
     """
     # user_id 생성
     user_id = None
@@ -118,11 +130,18 @@ async def login_kakao(frontRedirect: str = Query(None, description="프론트엔
     """
     카카오 로그인 시작
     
+    **인증 불필요** - 카카오 OAuth 로그인 페이지로 리다이렉트
+    
     Args:
-        frontRedirect: 로그인 완료 후 리다이렉트할 프론트엔드 URL
+        frontRedirect: 로그인 완료 후 리다이렉트할 프론트엔드 URL (선택사항)
     
     Returns:
-        RedirectResponse: 카카오 로그인 페이지로 리다이렉트
+        RedirectResponse: 카카오 로그인 페이지로 302 리다이렉트
+    
+    Note:
+        - frontRedirect는 URL 디코딩 처리됨
+        - 카카오 OAuth state 파라미터로 frontRedirect 전달
+        - 로그 기록을 위한 logging 포함
     """
     # URL 디코딩 처리
     from urllib.parse import unquote
@@ -147,13 +166,24 @@ async def kakao_callback(
     """
     카카오 로그인 콜백 처리
     
+    **인증 불필요** - 카카오 OAuth 콜백을 처리하고 프론트엔드로 리다이렉트
+    
     Args:
-        code: 카카오에서 받은 인증 코드
-        state: 프론트엔드 리다이렉트 URL (frontRedirect)
+        code: 카카오에서 받은 인증 코드 (필수)
+        state: 프론트엔드 리다이렉트 URL (frontRedirect, 선택사항)
         db: 데이터베이스 세션
         
     Returns:
         RedirectResponse: 프론트엔드로 302 리다이렉트
+        - 신규 회원: requires_signup=true, signup_token 포함
+        - 기존 회원: token(JWT) 포함
+        - 에러 시: error 메시지 포함
+    
+    Note:
+        - state 파라미터 URL 디코딩 처리
+        - HTTPS 강제 리다이렉트 (프로덕션 환경, localhost 제외)
+        - 사용자 생성/조회는 get_or_create_minimal 함수 사용
+        - 모든 에러는 프론트엔드로 리다이렉트하여 처리
     """
     # URL 디코딩 처리
     from urllib.parse import unquote
@@ -347,12 +377,23 @@ async def google_callback(
 # ==================== 회원가입 API ====================
 
 class SignupForm(BaseModel):
-    """회원가입 완료를 위한 폼 데이터"""
+    """회원가입 완료를 위한 폼 데이터
+
+    프론트 신규 포맷을 그대로 수용합니다.
+    허용 키:
+    - name → nickname
+    - field → track
+    - university → school
+    - portfolio → portfolio_url
+    - email (선택)
+    또한 구버전 키(nickname, track, school, portfolio_url)도 그대로 허용합니다.
+    """
     signup_token: str
-    nickname: str
-    track: str        # "frontend"|"backend"|"plan"|"design"|"data"
-    school: str
-    portfolio_url: HttpUrl | None = None
+    email: EmailStr | None = None
+    nickname: str = Field(validation_alias=AliasChoices("name", "nickname"))
+    track: str = Field(validation_alias=AliasChoices("field", "track"))  # "frontend"|"backend"|"plan"|"design"|"data"
+    school: str = Field(validation_alias=AliasChoices("university", "school"))
+    portfolio_url: HttpUrl | None = Field(default=None, validation_alias=AliasChoices("portfolio", "portfolio_url"))
 
     @field_validator("track")
     @classmethod
@@ -363,48 +404,82 @@ class SignupForm(BaseModel):
             raise ValueError(f"track must be one of {allowed}")
         return v
 
+    @field_validator("portfolio_url", mode="before")
+    @classmethod
+    def empty_portfolio_to_none(cls, v):
+        """빈 문자열 포트폴리오는 None 처리"""
+        if v == "" or v is None:
+            return None
+        return v
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def empty_email_to_none(cls, v):
+        if v == "" or v is None:
+            return None
+        return v
+
 
 @router.post("/signup")
 async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):
     """
     회원가입 완료 (온보딩 정보 입력)
     
+    **인증 불필요** - signup_token으로 신원 확인 후 온보딩 정보 저장
+    
     Args:
-        form: 회원가입 폼 데이터
+        form: 회원가입 폼 데이터 (SignupForm)
+        - signup_token: 회원가입 토큰 (필수)
+        - nickname: 닉네임 (필수)
+        - track: 트랙 ("frontend"|"backend"|"plan"|"design"|"data", 필수)
+        - school: 학교명 (필수)
+        - portfolio_url: 포트폴리오 URL (선택사항)
         db: 데이터베이스 세션
         
     Returns:
         dict: 액세스 토큰과 사용자 ID
+        - access_token: JWT 액세스 토큰
+        - user_id: 소셜 기반 사용자 ID (예: "kakao_12345")
         
     Raises:
-        HTTPException: 유효하지 않은 토큰, 사용자 없음
+        HTTPException: 
+            - 401: 유효하지 않거나 만료된 signup_token
+            - 404: 사용자를 찾을 수 없음
+    
+    Note:
+        - 이미 온보딩 완료된 경우 바로 액세스 토큰 발급
+        - 온보딩 완료 후 is_onboarded = True 설정
+        - 소셜 기반 user_id 시스템 사용
     """
     try:
         payload = decode_token(form.signup_token)
         if payload.get("typ") != "signup":
             raise ValueError("not signup token")
-        user_id = int(payload["uid"])
+        user_id = payload["uid"]
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired signup token")
 
-    user = db.query(User).get(user_id)
+    user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
 
     if user.is_onboarded:
         # 이미 완료된 경우 바로 access 토큰 발급
-        access = create_access_token({"sub": str(user.id)})
-        return {"access_token": access, "user_id": user.id}
+        access = create_access_token({"sub": user.user_id})
+        return {"access_token": access, "user_id": user.user_id}
 
     # 온보딩 정보 업데이트
     user.nickname = form.nickname
     user.track = form.track
     user.school = form.school
     user.portfolio_url = str(form.portfolio_url) if form.portfolio_url else None
+    # 이메일이 제공된 경우, 비어있다면 갱신
+    if form.email and not user.email:
+        user.email = str(form.email)
     user.is_onboarded = True
 
     db.commit()
     db.refresh(user)
 
-    access = create_access_token({"sub": str(user.id)})
-    return {"access_token": access, "user_id": user.id} 
+    access = create_access_token({"sub": user.user_id})
+    return {"access_token": access, "user_id": user.user_id} 

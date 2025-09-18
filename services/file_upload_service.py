@@ -12,16 +12,21 @@ class FileUploadService:
     @staticmethod
     async def upload_image(file: UploadFile) -> str:
         """
-        이미지 파일 업로드
+        이미지 파일 업로드 (공고 이미지용)
         
         Args:
-            file: 업로드할 이미지 파일
+            file: 업로드할 이미지 파일 (UploadFile)
             
         Returns:
-            str: 업로드된 이미지 URL
+            str: 업로드된 이미지 URL (GCS 공개 URL)
             
         Raises:
-            HTTPException: 파일 업로드 실패
+            HTTPException: 파일 업로드 실패 시 500 에러
+        
+        Note:
+            - generate_unique_blob_name으로 고유 파일명 생성
+            - GCS posts/images/ 경로에 저장
+            - 모든 예외는 500 에러로 변환하여 반환
         """
         try:
             blob_name = generate_unique_blob_name(file.filename or "uploaded_image")
@@ -33,16 +38,22 @@ class FileUploadService:
     @staticmethod
     async def upload_portfolio(file: UploadFile) -> str:
         """
-        포트폴리오 파일 업로드
+        포트폴리오 파일 업로드 (지원서 첨부파일용)
         
         Args:
-            file: 업로드할 포트폴리오 파일
+            file: 업로드할 포트폴리오 파일 (UploadFile)
             
         Returns:
-            str: 업로드된 파일 URL
+            str: 업로드된 파일 URL (GCS 공개 URL)
             
         Raises:
-            HTTPException: 파일 업로드 실패
+            HTTPException: 파일 업로드 실패 시 500 에러
+        
+        Note:
+            - generate_portfolio_blob_name으로 고유 파일명 생성
+            - GCS applications/portfolios/ 경로에 저장
+            - ATTACHMENT 타입 질문 답변에 사용됨
+            - 모든 예외는 500 에러로 변환하여 반환
         """
         try:
             blob_name = generate_portfolio_blob_name(file.filename or "uploaded_file")

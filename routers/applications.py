@@ -15,6 +15,7 @@ from schemas import (
 )
 from services.file_upload_service import FileUploadService
 from routers.auth import get_current_user
+from services.user_service import get_user_id_from_user
 import logging
 from datetime import datetime
 from typing import Optional, List
@@ -26,7 +27,7 @@ router = APIRouter()
 
 @router.post("/applications", response_model=ApplicationResponse, status_code=201)
 async def create_application(
-    application_data: ApplicationCreate,
+    application_data: str = Form(..., description="지원서 데이터(JSON 문자열) - key: application_data"),
     portfolio_files: Optional[List[UploadFile]] = File(None, description="첨부파일 타입 질문에 대한 파일들"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -34,21 +35,39 @@ async def create_application(
     """
     공고 지원 - 커스터마이징된 질문에 대한 답변 제출
     
+    **JWT 인증 필요** - 로그인한 사용자만 지원 가능
+    
     Args:
         application_data: 지원서 데이터 (공고 ID, 답변 목록)
-        portfolio_files: 첨부파일 목록 (ATTACHMENT 타입 질문용)
+        portfolio_files: 첨부파일 목록 (ATTACHMENT 타입 질문용, 선택사항)
         current_user: 현재 인증된 사용자
         db: 데이터베이스 세션
         
     Returns:
-        ApplicationResponse: 생성된 지원서 정보
+        ApplicationResponse: 생성된 지원서 정보 (ID, 상태, 생성시간 등)
         
     Raises:
-        HTTPException: 공고 없음, 중복 지원, 필수 질문 미답변, 파일 크기 초과 등
+        HTTPException: 
+            - 404: 공고를 찾을 수 없음
+            - 400: 중복 지원, 필수 질문 미답변, 파일 크기 초과, 질문 미설정
+            - 500: 지원서 저장 실패
+    
+    Note:
+        - 같은 공고에 중복 지원 불가
+        - 모든 필수 질문에 답변 필요
+        - ATTACHMENT 타입 질문은 파일 업로드 필수
+        - 파일 크기 제한: 1GB (settings.MAX_FILE_SIZE_BYTES)
     """
     try:
+        # 0. application_data(JSON 문자열) 파싱
+        try:
+            parsed = json.loads(application_data)
+            application_obj = ApplicationCreate(**parsed)
+        except Exception:
+            raise HTTPException(status_code=400, detail="application_data 형식이 올바르지 않습니다.")
+
         # 1. 공고 존재 여부 확인
-        post = db.query(Post).filter(Post.id == application_data.post_id).first()
+        post = db.query(Post).filter(Post.id == application_obj.post_id).first()
         if not post:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, 
@@ -58,7 +77,7 @@ async def create_application(
         # 2. 중복 지원 확인 (같은 사용자가 같은 공고에 중복 지원 방지)
         existing_application = db.query(Application).filter(
             Application.user_id == get_user_id_from_user(current_user),
-            Application.post_id == application_data.post_id
+            Application.post_id == application_obj.post_id
         ).first()
         
         if existing_application:
@@ -69,7 +88,7 @@ async def create_application(
         
         # 3. 공고의 커스텀 질문들 조회
         post_questions = db.query(PostQuestion).filter(
-            PostQuestion.post_id == application_data.post_id
+            PostQuestion.post_id == application_obj.post_id
         ).all()
         
         if not post_questions:
@@ -80,7 +99,7 @@ async def create_application(
         
         # 4. 필수 질문 답변 검증 (모든 필수 질문에 답변이 있는지 확인)
         required_questions = [q for q in post_questions if q.is_required]
-        answered_question_ids = [answer.post_question_id for answer in application_data.answers]
+        answered_question_ids = [answer.post_question_id for answer in application_obj.answers]
         
         missing_required_questions = []
         for question in required_questions:
@@ -96,7 +115,7 @@ async def create_application(
         # 5. 답변의 질문 ID 유효성 검증 (실제 존재하는 질문인지 확인)
         valid_question_ids = [q.id for q in post_questions]
         invalid_answers = []
-        for answer in application_data.answers:
+        for answer in application_obj.answers:
             if answer.post_question_id not in valid_question_ids:
                 invalid_answers.append(answer.post_question_id)
         
@@ -123,7 +142,7 @@ async def create_application(
         
         # 7. 지원서 생성
         application = Application(
-            post_id=application_data.post_id,
+            post_id=application_obj.post_id,
             user_id=get_user_id_from_user(current_user),
             status="제출됨"
         )
@@ -133,7 +152,7 @@ async def create_application(
         db.refresh(application)
         
         # 8. 답변들 저장 (질문 타입에 따라 처리)
-        for answer_data in application_data.answers:
+        for answer_data in application_obj.answers:
             # ATTACHMENT 타입 질문의 경우 파일 URL로 대체
             question = db.query(PostQuestion).filter(PostQuestion.id == answer_data.post_question_id).first()
             
@@ -194,16 +213,23 @@ async def get_application(
     """
     지원서 상세 조회 (본인의 지원서만 조회 가능)
     
+    **JWT 인증 필요** - 지원자 본인만 자신의 지원서 조회 가능
+    
     Args:
         application_id: 조회할 지원서 ID
         current_user: 현재 인증된 사용자
         db: 데이터베이스 세션
         
     Returns:
-        ApplicationResponse: 지원서 정보
+        ApplicationResponse: 지원서 기본 정보 (ID, 상태, 생성/수정 시간)
         
     Raises:
-        HTTPException: 지원서 없음, 권한 없음
+        HTTPException: 
+            - 404: 지원서를 찾을 수 없음 (또는 권한 없음)
+    
+    Note:
+        - 본인의 지원서만 조회 가능 (user_id 기반 필터링)
+        - 질문과 답변은 포함되지 않음 (기본 정보만)
     """
     application = db.query(Application).filter(
         Application.id == application_id,
@@ -234,20 +260,29 @@ async def get_post_applications(
     """
     특정 공고에 대한 지원자 목록 조회 (모집자만 접근 가능)
     
+    **JWT 인증 필요** - 공고 작성자만 해당 공고의 지원자 목록 조회 가능
+    
     Args:
         post_id: 공고 ID
-        page: 페이지 번호 (기본값: 1)
-        size: 페이지 크기 (기본값: 20, 최대: 100)
-        status: 상태 필터 (선택사항)
-        sort_by: 정렬 기준 (최신순, 오래된순, 상태순)
+        page: 페이지 번호 (기본값: 1, 최소: 1)
+        size: 페이지 크기 (기본값: 20, 범위: 1~100)
+        status: 상태 필터 ("제출됨", "합격", "불합격", "취소됨", 선택사항)
+        sort_by: 정렬 기준 (CREATED_AT_DESC, CREATED_AT_ASC, STATUS)
         current_user: 현재 인증된 사용자
         db: 데이터베이스 세션
         
     Returns:
-        ApplicationListResponse: 지원자 목록 및 페이지네이션 정보
+        ApplicationListResponse: 지원자 목록, 총 개수, 페이지네이션 정보
+        - User.nickname과 JOIN하여 지원자 닉네임 포함
         
     Raises:
-        HTTPException: 공고 없음, 권한 없음
+        HTTPException: 
+            - 404: 공고를 찾을 수 없음
+            - 403: 권한 없음 (공고 작성자가 아님)
+    
+    Note:
+        - 공고 작성자만 접근 가능 (post.user_id == get_user_id_from_user(current_user) 검증)
+        - User 테이블과 JOIN하여 지원자 닉네임 포함
     """
     # 1. 공고 존재 여부 및 권한 확인
     post = db.query(Post).filter(Post.id == post_id).first()
@@ -258,7 +293,7 @@ async def get_post_applications(
         )
     
     # 2. 권한 검증 - 공고 작성자만 접근 가능
-    if post.user_id != current_user.id:
+    if post.user_id != get_user_id_from_user(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="이 공고의 지원자 목록을 조회할 권한이 없습니다."
@@ -316,7 +351,7 @@ async def get_application_detail(
     """
     지원서 상세 조회 (모집자 또는 지원자 본인만 접근 가능)
     
-    모집자가 조회한 경우 자동으로 "열람됨" 상태로 변경됩니다.
+    **JWT 인증 필요** - 지원자 본인 또는 공고 작성자만 접근 가능
     
     Args:
         application_id: 조회할 지원서 ID
@@ -324,10 +359,20 @@ async def get_application_detail(
         db: 데이터베이스 세션
         
     Returns:
-        ApplicationDetailResponse: 지원서 상세 정보 (질문과 답변 포함)
+        ApplicationDetailResponse: 지원서 상세 정보
+        - 지원자 정보 (user_id, 닉네임)
+        - 지원서 상태 및 제출 시간
+        - 모든 질문과 답변 (LEFT JOIN으로 미답변 질문도 포함)
         
     Raises:
-        HTTPException: 지원서 없음, 권한 없음
+        HTTPException: 
+            - 404: 지원서 또는 연결된 공고를 찾을 수 없음
+            - 403: 권한 없음 (지원자 본인도 공고 작성자도 아님)
+    
+    Note:
+        - 모집자가 조회 시 감사 로그만 기록 (상태 변경 없음)
+        - PostQuestion과 ApplicationAnswer LEFT JOIN으로 모든 질문 포함
+        - User 테이블과 JOIN하여 지원자 닉네임 포함
     """
     # 1. 지원서 존재 여부 확인
     application = db.query(Application).filter(Application.id == application_id).first()
@@ -380,7 +425,7 @@ async def get_application_detail(
         questions.append(question_data)
     
     # 6. 모집자가 조회한 경우 감사 로그만 기록 (상태 변경 없음)
-    if post.user_id == current_user.id:
+    if post.user_id == current_user_id:
         # 감사 로그 기록
         status_log = ApplicationStatusLog(
             application_id=application.id,
@@ -394,7 +439,7 @@ async def get_application_detail(
     
     return ApplicationDetailResponse(
         application_id=application.id,
-        applicant_id=application.applicant_id,
+        user_id=application.user_id,
         applicant_nickname=applicant.nickname or "알 수 없음",
         status=application.status,
         submitted_at=application.created_at,
@@ -412,19 +457,28 @@ async def update_application_status(
     """
     지원서 상태 변경 (합격/불합격 결정)
     
-    이미 "합격" 또는 "불합격" 상태인 지원서는 재변경할 수 없습니다.
+    **JWT 인증 필요** - 공고 작성자만 지원서 상태 변경 가능
     
     Args:
         application_id: 상태를 변경할 지원서 ID
-        status_update: 새로운 상태 정보
+        status_update: 새로운 상태 정보 (ApplicationStatusUpdate)
         current_user: 현재 인증된 사용자
         db: 데이터베이스 세션
         
     Returns:
         ApplicationStatusResponse: 업데이트된 지원서 상태 정보
+        - application_id, status, updated_at 포함
         
     Raises:
-        HTTPException: 지원서 없음, 권한 없음, 이미 최종 결정됨
+        HTTPException: 
+            - 404: 지원서 또는 연결된 공고를 찾을 수 없음
+            - 403: 권한 없음 (공고 작성자가 아님)
+            - 400: 이미 최종 결정됨 ("합격" 또는 "불합격" 상태)
+    
+    Note:
+        - "합격", "불합격" 상태에서는 재변경 불가
+        - 모든 상태 변경은 ApplicationStatusLog에 기록됨
+        - updated_at 자동 갱신 (datetime.utcnow())
     """
     # 1. 지원서 존재 여부 확인
     application = db.query(Application).filter(Application.id == application_id).first()
@@ -442,7 +496,7 @@ async def update_application_status(
             detail="연결된 공고를 찾을 수 없습니다."
         )
     
-    if post.user_id != current_user.id:
+    if post.user_id != get_user_id_from_user(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="이 지원서의 상태를 변경할 권한이 없습니다."
@@ -486,7 +540,7 @@ async def cancel_application(
     """
     지원서 취소 (지원자 본인만 가능)
     
-    "제출됨" 상태일 때만 취소할 수 있습니다.
+    **JWT 인증 필요** - 지원자 본인만 자신의 지원서 취소 가능
     
     Args:
         application_id: 취소할 지원서 ID
@@ -495,9 +549,19 @@ async def cancel_application(
         
     Returns:
         ApplicationStatusResponse: 취소된 지원서 상태 정보
+        - application_id, status("취소됨"), updated_at 포함
         
     Raises:
-        HTTPException: 지원서 없음, 권한 없음, 취소 불가능한 상태
+        HTTPException: 
+            - 404: 지원서를 찾을 수 없음
+            - 403: 권한 없음 (지원자 본인이 아님)
+            - 400: 취소 불가능한 상태 ("제출됨" 상태가 아님)
+    
+    Note:
+        - "제출됨" 상태에서만 취소 가능
+        - 이미 처리된 지원서("합격", "불합격")는 취소 불가
+        - 취소 시 ApplicationStatusLog에 "지원자 취소" 사유로 기록
+        - updated_at 자동 갱신 (datetime.utcnow())
     """
     # 1. 지원서 존재 여부 확인
     application = db.query(Application).filter(Application.id == application_id).first()

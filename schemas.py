@@ -33,8 +33,8 @@ class ApplicationSortEnum(str, Enum):
     STATUS = "상태순"
 
 class QuestionTypeEnum(str, Enum):
-    TEXT_BOX = "TEXT_BOX"
-    LINK = "LINK"
+    TEXT = "TEXT"
+    TEXTAREA = "TEXTAREA"
     ATTACHMENT = "ATTACHMENT"
     CHOICES = "CHOICES"
 
@@ -100,7 +100,7 @@ class PostQuestionCreate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "question_type": "TEXT_BOX",
+                "question_type": "TEXT",
                 "question_content": "가장 기억에 남는 프로젝트는 무엇인가요?",
                 "is_required": True
             }
@@ -145,7 +145,7 @@ class ApplicationCreate(BaseModel):
 class ApplicationResponse(BaseModel):
     id: int
     post_id: int
-    applicant_id: int
+    user_id: str
     status: str
     created_at: datetime
     updated_at: datetime
@@ -166,7 +166,7 @@ class ApplicationAnswerResponse(BaseModel):
 # 지원자 관리 기능을 위한 새로운 스키마들
 class ApplicationListItem(BaseModel):
     application_id: int
-    applicant_id: int
+    user_id: str
     applicant_nickname: str
     status: str
     submitted_at: datetime
@@ -182,7 +182,7 @@ class ApplicationListResponse(BaseModel):
 
 class ApplicationDetailResponse(BaseModel):
     application_id: int
-    applicant_id: int
+    user_id: str
     applicant_nickname: str
     status: str
     submitted_at: datetime

@@ -15,19 +15,26 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
     """
     특정 사용자의 프로필을 조회합니다.
     
-    - 기본 정보(이메일, 트랙, 학교, 포트폴리오 URL, 프로필/커버/시간표 이미지)
-    - 연도별 경력 정보
-    - 최근 합격 프로젝트 2개
-
+    **인증 불필요** - 모든 사용자의 프로필을 공개적으로 조회 가능
+    
     Args:
-        user_id (str): 조회할 사용자 ID
+        user_id (str): 조회할 사용자 ID (소셜 로그인 기반, 예: "kakao_12345")
         db (Session): 데이터베이스 세션
 
     Returns:
         UserProfileResponse: 사용자 프로필 응답
+        - 기본 정보: user_id, email, track, school, portfolio_url
+        - 이미지 URL: avatar_url, cover_url, timetable_url
+        - 경력 정보: careers (연도별로 그룹화된 딕셔너리)
+        - 최근 프로젝트: recent_projects (최대 2개, 합격한 프로젝트만)
 
     Raises:
         HTTPException: 사용자를 찾을 수 없는 경우 (404)
+    
+    Note:
+        - careers는 연도별로 그룹화되어 반환 (최신 연도 우선)
+        - recent_projects는 get_recent_projects 함수로 조회
+        - 공개 프로필로 누구나 조회 가능
     """
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
@@ -70,16 +77,14 @@ def update_user_profile(
     """
     사용자 프로필을 수정합니다.
     
-    - 본인만 자신의 프로필 수정 가능
-    - 텍스트 정보와 이미지(프로필사진, 커버사진) 수정 가능
-    - careers(JSON 문자열)로 경력 추가/수정/삭제 가능
-
+    **JWT 인증 필요** - 본인만 자신의 프로필 수정 가능
+    
     Args:
-        user_id (str): 수정할 사용자 ID
-        track (str, optional): 트랙 정보
-        school (str, optional): 학교 정보
-        portfolio_url (str, optional): 포트폴리오 URL
-        careers (str, optional): JSON 문자열 형태의 경력 데이터
+        user_id (str): 수정할 사용자 ID (소셜 로그인 기반)
+        track (str, optional): 트랙 정보 (Form 데이터)
+        school (str, optional): 학교 정보 (Form 데이터)
+        portfolio_url (str, optional): 포트폴리오 URL (Form 데이터)
+        careers (str, optional): JSON 문자열 형태의 경력 데이터 (Form 데이터)
         avatar (UploadFile, optional): 아바타 이미지 파일
         cover (UploadFile, optional): 커버 이미지 파일
         db (Session): 데이터베이스 세션
@@ -87,11 +92,19 @@ def update_user_profile(
 
     Returns:
         dict: 성공 메시지와 업데이트된 사용자 프로필
+        - message: 성공 메시지
+        - profile: 업데이트된 프로필 정보
 
     Raises:
         HTTPException:
             - 403 Forbidden: 다른 사용자의 프로필 수정 시도
             - 404 Not Found: 사용자를 찾을 수 없음
+    
+    Note:
+        - Form 데이터와 파일 업로드를 동시에 처리
+        - 이미지 업로드 시 GCS에 저장 후 URL 반환
+        - careers는 JSON 문자열로 전달되어 파싱됨
+        - update_profile 서비스 함수 사용
     """
     if user_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="Not allowed to update this profile")
@@ -119,22 +132,27 @@ def upload_timetable_api(
     """
     시간표 이미지를 업로드합니다.
     
-    - 본인만 자신의 시간표 업로드 가능
-    - 업로드된 시간표 URL이 DB에 저장됩니다.
-
+    **JWT 인증 필요** - 본인만 자신의 시간표 업로드 가능
+    
     Args:
-        user_id (str): 사용자 ID
-        timetable (UploadFile): 업로드된 시간표 이미지
+        user_id (str): 사용자 ID (소셜 로그인 기반)
+        timetable (UploadFile): 업로드된 시간표 이미지 (필수)
         db (Session): 데이터베이스 세션
         current_user (User): 현재 로그인된 사용자
 
     Returns:
         dict: 업로드된 시간표 이미지 URL
+        - timetable_url: GCS에 저장된 시간표 이미지 URL
 
     Raises:
         HTTPException:
             - 403 Forbidden: 다른 사용자의 프로필 업로드 시도
             - 404 Not Found: 사용자를 찾을 수 없음
+    
+    Note:
+        - GCS의 upload_timetable 함수 사용
+        - 업로드 완료 후 User.timetable_url 자동 업데이트
+        - 권한 검증: user_id == current_user.user_id
     """
     if user_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="Not allowed to update this profile")

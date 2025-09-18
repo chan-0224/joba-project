@@ -19,7 +19,19 @@ except Exception as e:
 bucket = storage_client.bucket(settings.GCS_BUCKET_NAME)
 
 def validate_file_size(file: UploadFile) -> None:
-    """파일 크기 검증"""
+    """
+    파일 크기 검증
+    
+    Args:
+        file: 검증할 파일 (UploadFile)
+        
+    Raises:
+        HTTPException: 파일 크기가 MAX_FILE_SIZE_BYTES 초과 시 400 에러
+    
+    Note:
+        - settings.MAX_FILE_SIZE_BYTES 설정값 사용
+        - 현재 기본값: 1GB
+    """
     if file.size and file.size > settings.MAX_FILE_SIZE_BYTES:
         raise HTTPException(
             status_code=400,
@@ -27,6 +39,23 @@ def validate_file_size(file: UploadFile) -> None:
         )
 
 def upload_file_to_gcs(file_object: UploadFile, destination_blob_name: str) -> str:
+    """
+    파일을 GCS에 업로드
+    
+    Args:
+        file_object: 업로드할 파일 (UploadFile)
+        destination_blob_name: GCS에 저장될 파일 경로
+        
+    Returns:
+        str: 업로드된 파일의 공개 URL
+        
+    Raises:
+        Exception: GCP 인증 정보 오류 또는 업로드 실패
+    
+    Note:
+        - content_type 자동 설정
+        - 반환 URL 형식: https://storage.googleapis.com/{bucket_name}/{blob_name}
+    """
     if credentials is None:
         raise Exception("GCP 인증 정보가 올바르지 않습니다.")
     try:
@@ -40,11 +69,37 @@ def upload_file_to_gcs(file_object: UploadFile, destination_blob_name: str) -> s
         raise
 
 def generate_unique_blob_name(original_filename: str) -> str:
+    """
+    공고 이미지용 고유 파일명 생성
+    
+    Args:
+        original_filename: 원본 파일명
+        
+    Returns:
+        str: GCS 저장 경로 (posts/images/{uuid}{ext})
+    
+    Note:
+        - UUID를 사용한 고유 파일명 생성
+        - 원본 파일의 확장자 유지
+    """
     ext = os.path.splitext(original_filename)[1]
     return f"posts/images/{uuid.uuid4().hex}{ext}"
 
 def generate_portfolio_blob_name(original_filename: str) -> str:
-    """포트폴리오 파일용 고유 이름 생성"""
+    """
+    포트폴리오 파일용 고유 파일명 생성
+    
+    Args:
+        original_filename: 원본 파일명
+        
+    Returns:
+        str: GCS 저장 경로 (applications/portfolios/{uuid}{ext})
+    
+    Note:
+        - UUID를 사용한 고유 파일명 생성
+        - 원본 파일의 확장자 유지
+        - ATTACHMENT 타입 질문 답변용 파일에 사용
+    """
     ext = os.path.splitext(original_filename)[1]
     return f"applications/portfolios/{uuid.uuid4().hex}{ext}"
 
@@ -65,7 +120,19 @@ def generate_profile_image_blob_name(user_id: str, kind: str, original_filename:
     return f"profiles/{user_id}/{kind}/{uuid.uuid4().hex}{ext}"
 
 def validate_image(file: UploadFile) -> None:
-    """이미지 파일 검증"""
+    """
+    이미지 파일 형식 검증
+    
+    Args:
+        file: 검증할 파일 (UploadFile)
+        
+    Raises:
+        HTTPException: 이미지 파일이 아닌 경우 400 에러
+    
+    Note:
+        - content_type이 "image/"로 시작하는지 확인
+        - 프로필 이미지 업로드 시 사용
+    """
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(
             status_code=400,
@@ -109,13 +176,52 @@ def upload_profile_image(file: UploadFile, user_id: str, kind: str) -> str:
     return url
 
 def upload_avatar(file: UploadFile, user_id: str) -> str:
-    """프로필 이미지를 업로드합니다."""
+    """
+    프로필 아바타 이미지 업로드
+    
+    Args:
+        file: 아바타 이미지 파일 (UploadFile)
+        user_id: 사용자 ID (소셜 로그인 기반)
+        
+    Returns:
+        str: 업로드된 아바타 이미지 URL
+    
+    Note:
+        - profiles/{user_id}/avatars/ 경로에 저장
+        - upload_profile_image 함수 사용
+    """
     return upload_profile_image(file, user_id, "avatars")
 
 def upload_cover(file: UploadFile, user_id: str) -> str:
-    """커버 이미지를 업로드합니다."""
+    """
+    프로필 커버 이미지 업로드
+    
+    Args:
+        file: 커버 이미지 파일 (UploadFile)
+        user_id: 사용자 ID (소셜 로그인 기반)
+        
+    Returns:
+        str: 업로드된 커버 이미지 URL
+    
+    Note:
+        - profiles/{user_id}/covers/ 경로에 저장
+        - upload_profile_image 함수 사용
+    """
     return upload_profile_image(file, user_id, "covers")
 
 def upload_timetable(file: UploadFile, user_id: str) -> str:
-    """시간표 이미지를 업로드합니다."""
+    """
+    시간표 이미지 업로드
+    
+    Args:
+        file: 시간표 이미지 파일 (UploadFile)
+        user_id: 사용자 ID (소셜 로그인 기반)
+        
+    Returns:
+        str: 업로드된 시간표 이미지 URL
+    
+    Note:
+        - profiles/{user_id}/timetables/ 경로에 저장
+        - upload_profile_image 함수 사용
+    """
     return upload_profile_image(file, user_id, "timetables")

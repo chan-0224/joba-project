@@ -2,7 +2,8 @@
 공고 관리 API 엔드포인트
 
 이 모듈은 공고 생성, 조회, 목록 조회 기능을 제공합니다.
-모든 엔드포인트는 JWT 토큰 기반 인증이 필요합니다.
+- 공고 생성: JWT 토큰 기반 인증 필요
+- 공고 목록/상세 조회: 인증 불필요 (공개 API)
 """
 
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Query
@@ -98,19 +99,22 @@ async def list_posts(
     """
     공고 목록 조회 (필터링, 정렬, 검색, 페이지네이션 지원)
     
+    **인증 불필요** - 모든 사용자가 공고 목록을 조회할 수 있습니다.
+    
     Args:
         db: 데이터베이스 세션
-        sort: 정렬 기준 (최신순, 인기순, 랜덤순)
-        recruitment_field: 모집 분야 필터
-        recruitment_headcount: 모집 인원 필터
-        school_name: 학교명 검색
+        sort: 정렬 기준 (최신순|인기순|랜덤순)
+        recruitment_field: 모집 분야 필터 (프론트엔드, 백엔드, 기획, 디자인, 데이터 분석)
+        recruitment_headcount: 모집 인원 필터 (1~2인, 3~5인, 6~10인, 인원미정)
+        school_name: 학교명 검색 (title, description, target_school_name에서 검색)
         deadline_before: 마감일 이전 필터
         q: 검색 키워드 (제목, 설명에서 검색)
-        page: 페이지 번호
-        size: 페이지당 공고 개수
+        page: 페이지 번호 (1부터 시작)
+        size: 페이지당 공고 개수 (1~100)
         
     Returns:
         PostListResponse: 공고 목록 및 총 개수
+        - 각 공고에 application_count, recruited_count, recruitment_status 포함
     """
     query = db.query(Post)
     
@@ -210,15 +214,21 @@ async def get_post_detail(
     """
     공고 상세 조회
     
+    **인증 불필요** - 모든 사용자가 공고 상세 정보를 조회할 수 있습니다.
+    
     Args:
         post_id: 조회할 공고 ID
         db: 데이터베이스 세션
         
     Returns:
         PostResponse: 공고 상세 정보
+        - application_count: 지원자 수
+        - recruited_count: 모집된 인원 수 (합격자 수)
+        - recruitment_status: 모집 상태 ("모집중" 또는 "마감")
+        - user_id: 문자열 형태로 변환된 사용자 ID
         
     Raises:
-        HTTPException: 공고를 찾을 수 없음
+        HTTPException: 공고를 찾을 수 없음 (404)
     """
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
