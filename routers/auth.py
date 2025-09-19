@@ -425,9 +425,13 @@ class SignupForm(BaseModel):
     @classmethod
     def empty_portfolio_to_none(cls, v):
         """빈 문자열 포트폴리오는 None 처리"""
-        if v == "" or v is None:
+        if v is None:
             return None
-        return v
+        if isinstance(v, str):
+            if v.strip() == "":
+                return None
+            return v.strip()
+        return None
 
     @field_validator("email", mode="before")
     @classmethod
@@ -486,6 +490,7 @@ async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):
         return {"access_token": access, "user_id": user.user_id}
 
     # 온보딩 정보 업데이트
+    import logging
     user.nickname = form.nickname
     user.track = form.track
     user.school = form.school
@@ -497,6 +502,7 @@ async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):
 
     db.commit()
     db.refresh(user)
+    logging.info(f"signup completed: user_id={user.user_id}, nickname={user.nickname}, track={user.track}, school={user.school}, portfolio_url={user.portfolio_url}, email={user.email}")
 
     access = create_access_token({"sub": user.user_id})
     return {"access_token": access, "user_id": user.user_id} 
