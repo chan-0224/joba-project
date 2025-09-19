@@ -527,25 +527,14 @@ VITE_API_BASE_URL=https://joba-project.onrender.com/v1/posts
 - 헤더: `Authorization: Bearer <token>`
 - 주요 응답: `nickname`, `track`(한글: 프론트엔드/백엔드/기획/디자인/데이터 분석)
 
-예시
-```bash
-GET /v1/auth/me
-Authorization: Bearer <token>
-```
+참고: 이 엔드포인트로 닉네임/트랙을 조회합니다.
 
 ### 2) 공고 목록 불러오기 (이미지/제목/지원자 수)
 - 엔드포인트: `GET /v1/posts`
 - 쿼리: `recruitment_field`(선택, 한글), `sort`, `page`, `size`
 - 카드 표시용 필드: `image_url`, `title`, `application_count`, `recruitment_status`, `id`
 
-예시 (사용자 트랙 자동 필터)
-```javascript
-// 1) 로그인 사용자 정보
-const me = await fetch('/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
-// 2) 트랙으로 공고 목록 필터링
-const params = new URLSearchParams({ recruitment_field: me.track, sort: '최신순', page: '1', size: '10' });
-const posts = await fetch(`/v1/posts?${params}`).then(r => r.json());
-```
+참고: 사용자 트랙 값을 `recruitment_field` 쿼리에 사용하세요.
 
 ### 3) 팀원 모집하기 버튼 → 공고 작성
 - 프론트 라우팅: 작성 페이지로 이동(e.g. `/posts/create`)
@@ -553,24 +542,5 @@ const posts = await fetch(`/v1/posts?${params}`).then(r => r.json());
   - 헤더: `Authorization: Bearer <token>`
   - 바디: `image_file`(필수 파일) + `title`, `description`, `recruitment_field`(한글), `recruitment_headcount`, `deadline` 등
 
-예시
-```javascript
-const form = new FormData();
-form.append('image_file', file);
-form.append('title', title);
-form.append('description', description);
-form.append('recruitment_field', me.track); // 예: "디자인"
-form.append('recruitment_headcount', '3~5인');
-form.append('school_specific', 'false');
-form.append('deadline', deadlineISO);
+참고: multipart/form-data로 이미지 파일과 필드를 전송합니다.
 
-await fetch('/v1/posts', {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${token}` },
-  body: form
-});
-```
-
-### 4) 비로그인 처리
-- 비로그인 시에는 `recruitment_field` 없이 기본 목록(`GET /v1/posts`)을 표시
-- “팀원 모집하기” 클릭 시 소셜 로그인 유도 → 로그인 후 작성 페이지로 이동
