@@ -397,26 +397,25 @@ class SignupForm(BaseModel):
 
     @field_validator("track", mode="before")
     @classmethod
-    def normalize_track_korean(cls, v):
-        """한글 라벨을 백엔드 내부 영문 값으로 매핑"""
+    def normalize_track_to_korean(cls, v):
+        """트랙 값을 한글 표기로 정규화(영문 입력 시 한글로 매핑)"""
         if v is None:
             return v
-        mapping = {
-            "프론트엔드": "frontend",
-            "백엔드": "backend",
-            "기획": "plan",
-            "디자인": "design",
-            "데이터 분석": "data",
-            "데이터": "data",
+        mapping_en_to_ko = {
+            "frontend": "프론트엔드",
+            "backend": "백엔드",
+            "plan": "기획",
+            "design": "디자인",
+            "data": "데이터 분석",
         }
         s = str(v).strip()
-        return mapping.get(s, v)
+        return mapping_en_to_ko.get(s, s)
 
     @field_validator("track")
     @classmethod
     def check_track(cls, v):
-        """트랙 값 검증"""
-        allowed = {"frontend", "backend", "plan", "design", "data"}
+        """트랙 값 검증 - 한글 표기만 허용"""
+        allowed = {"프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"}
         if v not in allowed:
             raise ValueError(f"track must be one of {allowed}")
         return v
