@@ -395,6 +395,23 @@ class SignupForm(BaseModel):
     school: str = Field(validation_alias=AliasChoices("university", "school", "univ"))
     portfolio_url: HttpUrl | None = Field(default=None, validation_alias=AliasChoices("portfolio", "portfolio_url"))
 
+    @field_validator("track", mode="before")
+    @classmethod
+    def normalize_track_korean(cls, v):
+        """한글 라벨을 백엔드 내부 영문 값으로 매핑"""
+        if v is None:
+            return v
+        mapping = {
+            "프론트엔드": "frontend",
+            "백엔드": "backend",
+            "기획": "plan",
+            "디자인": "design",
+            "데이터 분석": "data",
+            "데이터": "data",
+        }
+        s = str(v).strip()
+        return mapping.get(s, v)
+
     @field_validator("track")
     @classmethod
     def check_track(cls, v):
