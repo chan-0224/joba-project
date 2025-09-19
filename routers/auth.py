@@ -392,7 +392,7 @@ class SignupForm(BaseModel):
     email: EmailStr | None = None
     nickname: str = Field(validation_alias=AliasChoices("name", "nickname"))
     track: str = Field(validation_alias=AliasChoices("field", "track"))  # "frontend"|"backend"|"plan"|"design"|"data"
-    school: str = Field(validation_alias=AliasChoices("university", "school"))
+    school: str = Field(validation_alias=AliasChoices("university", "school", "univ"))
     portfolio_url: HttpUrl | None = Field(default=None, validation_alias=AliasChoices("portfolio", "portfolio_url"))
 
     @field_validator("track")
