@@ -10,6 +10,7 @@ from database import Base, engine
 from datetime import datetime
 from fastapi import APIRouter
 from exceptions import JOBAException
+from services.logging_stream import ensure_queue_handler, ensure_redis_handler
 
 # 데이터베이스 스키마 업데이트
 Base.metadata.create_all(bind=engine)
@@ -69,10 +70,19 @@ v1_router.include_router(logs_router.router, tags=["logs"])
 # 메인 앱에 v1 라우터 포함
 app.include_router(v1_router)
 
-# DB 테이블 생성
 @app.on_event("startup")
 def on_startup():
     try:
+        # Ensure log handlers
+        try:
+            ensure_redis_handler()
+        except Exception:
+            pass
+        try:
+            ensure_queue_handler()
+        except Exception:
+            pass
+
         print("데이터베이스 스키마 업데이트 시작...")
         Base.metadata.create_all(bind=engine)
         print("✅ 데이터베이스 스키마 업데이트 완료")

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body
 from fastapi.responses import StreamingResponse
 import queue
 import logging
-from services.logging_stream import ensure_queue_handler, log_queue, format_record
+from services.logging_stream import ensure_queue_handler, ensure_redis_handler, log_queue, format_record, sse_event_stream
 
 
 router = APIRouter(prefix="/logs")
@@ -10,19 +10,10 @@ router = APIRouter(prefix="/logs")
 
 @router.get("/stream")
 async def stream_logs():
+    # Prefer Redis pub/sub; if unavailable, fallback to in-process queue
+    ensure_redis_handler()
     ensure_queue_handler()
-
-    async def event_generator():
-        while True:
-            try:
-                record = log_queue.get(timeout=1.0)  # type: ignore[arg-type]
-                line = format_record(record)
-                yield f"data: {line}\n\n"
-            except queue.Empty:
-                yield f": ping\n\n"
-                await _sleep(0.5)
-
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    return StreamingResponse(sse_event_stream(), media_type="text/event-stream")
 
 
 async def _sleep(seconds: float):
