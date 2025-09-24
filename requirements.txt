@@ -12,3 +12,4 @@ python-jose
 PyJWT
 slowapi
 email-validator
+redis>=5.0.0
