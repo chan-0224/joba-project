@@ -314,14 +314,14 @@ const handleFilterChange = (filterType, value) => { /* 필터 변경 */ }
 // 1. 소셜 로그인 후 신규 사용자인 경우
 // frontRedirect에서 requires_signup=true와 signup_token 받음
 
-// 2. 회원가입 완료 요청 (프론트 신규 포맷)
+// 2. 회원가입 완료 요청 (신규 키만 사용)
 const signupData = {
   signup_token: token,         // 소셜 로그인 시 발급받은 토큰
   email: email,                // 미리 채워진 이메일(선택)
-  name: name,                  // 사용자가 직접 입력한 이름 → nickname
-  field: field,                // 사용자가 선택한 트랙 → track (frontend|backend|plan|design|data)
-  university: univ,            // 사용자가 직접 입력한 학교 → school
-  portfolio: portfolio || null // 포트폴리오(선택) → portfolio_url
+  name: name,                  // 사용자가 직접 입력한 이름
+  field: field,                // 사용자가 선택한 트랙 (frontend|backend|plan|design|data)
+  university: univ,            // 사용자가 직접 입력한 학교
+  portfolio: portfolio || null // 포트폴리오(선택)
 };
 
 const response = await fetch('/v1/auth/signup', {

@@ -12,7 +12,7 @@ from database import get_db, User
 from services import kakao_auth, naver_auth, google_auth
 from services.user_service import get_or_create_minimal
 from security import create_access_token, create_signup_token, decode_token
-from pydantic import BaseModel, HttpUrl, field_validator, AliasChoices, EmailStr, Field
+from pydantic import BaseModel, HttpUrl, field_validator, EmailStr
 from urllib.parse import urlencode
 import os
 
@@ -377,27 +377,25 @@ async def google_callback(
 # ==================== 회원가입 API ====================
 
 class SignupForm(BaseModel):
-    """회원가입 완료를 위한 폼 데이터
+    """회원가입 완료를 위한 폼 데이터(신규 키만 사용)
 
-    프론트 신규 포맷을 그대로 수용합니다.
-    허용 키:
-    - name → nickname
-    - field → track
-    - university → school
-    - portfolio → portfolio_url
+    사용 키(구키는 더 이상 허용하지 않음):
+    - name
+    - field (frontend|backend|plan|design|data)
+    - university
+    - portfolio (선택)
     - email (선택)
-    또한 구버전 키(nickname, track, school, portfolio_url)도 그대로 허용합니다.
     """
     signup_token: str
     email: EmailStr | None = None
-    nickname: str = Field(validation_alias=AliasChoices("name", "nickname"))
-    track: str = Field(validation_alias=AliasChoices("field", "track"))  # "frontend"|"backend"|"plan"|"design"|"data"
-    school: str = Field(validation_alias=AliasChoices("university", "school", "univ"))
-    portfolio_url: HttpUrl | None = Field(default=None, validation_alias=AliasChoices("portfolio", "portfolio_url"))
+    name: str
+    field: str  # "frontend"|"backend"|"plan"|"design"|"data"
+    university: str
+    portfolio: HttpUrl | None = None
 
-    @field_validator("track", mode="before")
+    @field_validator("field", mode="before")
     @classmethod
-    def normalize_track_to_korean(cls, v):
+    def normalize_field_to_korean(cls, v):
         """트랙 값을 한글 표기로 정규화(영문 입력 시 한글로 매핑)"""
         if v is None:
             return v
@@ -412,16 +410,16 @@ class SignupForm(BaseModel):
         # 이미 한글이면 그대로 사용, 영문이면 한글로 변환
         return mapping_en_to_ko.get(s, s)
 
-    @field_validator("track")
+    @field_validator("field")
     @classmethod
-    def check_track(cls, v):
+    def check_field(cls, v):
         """트랙 값 검증 - 한글 표기만 허용"""
         allowed = {"프론트엔드", "백엔드", "기획", "디자인", "데이터 분석"}
         if v not in allowed:
-            raise ValueError(f"track must be one of {allowed}")
+            raise ValueError(f"field must be one of {allowed}")
         return v
 
-    @field_validator("portfolio_url", mode="before")
+    @field_validator("portfolio", mode="before")
     @classmethod
     def empty_portfolio_to_none(cls, v):
         """빈 문자열 포트폴리오는 None 처리"""
@@ -453,10 +451,10 @@ async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):
     Args:
         form: 회원가입 폼 데이터 (SignupForm)
         - signup_token: 회원가입 토큰 (필수)
-        - nickname: 닉네임 (필수)
-        - track: 트랙 ("frontend"|"backend"|"plan"|"design"|"data", 필수)
-        - school: 학교명 (필수)
-        - portfolio_url: 포트폴리오 URL (선택사항)
+        - name: 닉네임 (필수)
+        - field: 트랙 ("frontend"|"backend"|"plan"|"design"|"data", 필수)
+        - university: 학교명 (필수)
+        - portfolio: 포트폴리오 URL (선택사항)
         db: 데이터베이스 세션
         
     Returns:
@@ -493,10 +491,10 @@ async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):
 
     # 온보딩 정보 업데이트
     import logging
-    user.nickname = form.nickname
-    user.track = form.track
-    user.school = form.school
-    user.portfolio_url = str(form.portfolio_url) if form.portfolio_url else None
+    user.nickname = form.name
+    user.track = form.field
+    user.school = form.university
+    user.portfolio_url = str(form.portfolio) if form.portfolio else None
     # 이메일이 제공된 경우, 비어있다면 갱신
     if form.email and not user.email:
         user.email = str(form.email)
