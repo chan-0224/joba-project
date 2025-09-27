@@ -329,7 +329,7 @@ async def get_post_applications(
         application_items.append(ApplicationListItem(
             application_id=application.id,
             user_id=application.user_id,
-            applicant_nickname=nickname or "알 수 없음",
+            applicant_name=nickname or "알 수 없음",
             status=application.status,
             submitted_at=application.created_at
         ))
@@ -440,7 +440,7 @@ async def get_application_detail(
     return ApplicationDetailResponse(
         application_id=application.id,
         user_id=application.user_id,
-        applicant_nickname=applicant.nickname or "알 수 없음",
+        applicant_name=applicant.name or "알 수 없음",
         status=application.status,
         submitted_at=application.created_at,
         questions=questions

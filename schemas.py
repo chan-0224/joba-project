@@ -167,7 +167,7 @@ class ApplicationAnswerResponse(BaseModel):
 class ApplicationListItem(BaseModel):
     application_id: int
     user_id: str
-    applicant_nickname: str
+    applicant_name: str
     status: str
     submitted_at: datetime
 
@@ -183,7 +183,7 @@ class ApplicationListResponse(BaseModel):
 class ApplicationDetailResponse(BaseModel):
     application_id: int
     user_id: str
-    applicant_nickname: str
+    applicant_name: str
     status: str
     submitted_at: datetime
     questions: List[Dict[str, Any]]
@@ -222,9 +222,9 @@ class RecentProjectResponse(BaseModel):  # 최근 프로젝트
 class UserProfileResponse(BaseModel):  # 프로필 조회 응답
     user_id: str
     email: str
-    track: Optional[str] = None
-    school: Optional[str] = None
-    portfolio_url: Optional[str] = None
+    field: Optional[str] = None
+    university: Optional[str] = None
+    portfolio: Optional[str] = None
     avatar_url: Optional[str] = None
     cover_url: Optional[str] = None
     timetable_url: Optional[str] = None

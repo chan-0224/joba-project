@@ -23,7 +23,7 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
 
     Returns:
         UserProfileResponse: 사용자 프로필 응답
-        - 기본 정보: user_id, email, track, school, portfolio_url
+        - 기본 정보: user_id, email, field, university, portfolio
         - 이미지 URL: avatar_url, cover_url, timetable_url
         - 경력 정보: careers (연도별로 그룹화된 딕셔너리)
         - 최근 프로젝트: recent_projects (최대 2개, 합격한 프로젝트만)
@@ -52,9 +52,9 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
     return {
         "user_id": user.user_id,
         "email": user.email,
-        "track": user.field,
-        "school": user.university,
-        "portfolio_url": user.portfolio,
+        "field": user.field,
+        "university": user.university,
+        "portfolio": user.portfolio,
         "avatar_url": user.avatar_url,
         "cover_url": user.cover_url,
         "timetable_url": user.timetable_url,
