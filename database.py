@@ -113,11 +113,11 @@ class User(Base):
 
     email = Column(String, unique=True, nullable=True, index=True)  # 인덱스 추가
 
-    # 온보딩에 필요한 정보들
-    nickname = Column(String, nullable=True, index=True)  # 인덱스 추가
-    track = Column(String, nullable=True, index=True)  # 인덱스 추가
-    school = Column(String, nullable=True, index=True)  # 인덱스 추가
-    portfolio_url = Column(Text, nullable=True)
+    # 온보딩에 필요한 정보들 (DB 컬럼명은 신 키로 매핑)
+    nickname = Column('name', String, nullable=True, index=True)  # 인덱스 추가
+    track = Column('field', String, nullable=True, index=True)  # 인덱스 추가
+    school = Column('university', String, nullable=True, index=True)  # 인덱스 추가
+    portfolio_url = Column('portfolio', Text, nullable=True)
 
     is_onboarded = Column(Boolean, nullable=False, default=False, index=True)  # 인덱스 추가
 
@@ -133,8 +133,8 @@ class User(Base):
 
     # 복합 인덱스 추가
     __table_args__ = (
-        Index('idx_users_track_onboarded', 'track', 'is_onboarded'),
-        Index('idx_users_school_onboarded', 'school', 'is_onboarded'),
+        Index('idx_users_track_onboarded', 'field', 'is_onboarded'),
+        Index('idx_users_school_onboarded', 'university', 'is_onboarded'),
     )
 
 
