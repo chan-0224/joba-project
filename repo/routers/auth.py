@@ -93,6 +93,7 @@ async def me(current_user: User = Depends(get_current_user)):
         "email": current_user.email,
         "name": current_user.name,
         "field": current_user.field,
+        "university": current_user.university,
         "is_onboarded": current_user.is_onboarded,
     }
 
