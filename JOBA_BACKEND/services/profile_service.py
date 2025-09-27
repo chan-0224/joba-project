@@ -28,11 +28,11 @@ def update_profile(db: Session, user: User, track: str, school: str, portfolio_u
         HTTPException: careers JSON이 잘못된 경우 (ValueError 발생 시 상위에서 처리 필요)
     """
     if track is not None:
-        user.track = track
+        user.field = track
     if school is not None:
-        user.school = school
+        user.university = school
     if portfolio_url is not None:
-        user.portfolio_url = portfolio_url
+        user.portfolio = portfolio_url
     if avatar_url is not None:
         user.avatar_url = avatar_url
     if cover_url is not None:

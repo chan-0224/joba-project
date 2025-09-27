@@ -300,7 +300,7 @@ async def get_post_applications(
         )
     
     # 3. 지원자 목록 조회 (사용자 닉네임과 함께)
-    query = db.query(Application, User.nickname).join(
+    query = db.query(Application, User.name).join(
         User, Application.user_id == User.user_id
     ).filter(Application.post_id == post_id)
     

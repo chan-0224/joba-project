@@ -52,9 +52,9 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
     return {
         "user_id": user.user_id,
         "email": user.email,
-        "track": user.track,
-        "school": user.school,
-        "portfolio_url": user.portfolio_url,
+        "track": user.field,
+        "school": user.university,
+        "portfolio_url": user.portfolio,
         "avatar_url": user.avatar_url,
         "cover_url": user.cover_url,
         "timetable_url": user.timetable_url,

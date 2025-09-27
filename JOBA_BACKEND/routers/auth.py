@@ -91,8 +91,8 @@ async def me(current_user: User = Depends(get_current_user)):
         "id": current_user.id,
         "user_id": user_id,
         "email": current_user.email,
-        "nickname": current_user.nickname,
-        "track": current_user.track,
+        "nickname": current_user.name,
+        "track": current_user.field,
         "is_onboarded": current_user.is_onboarded,
     }
 
@@ -491,10 +491,10 @@ async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):
 
     # 온보딩 정보 업데이트
     import logging
-    user.nickname = form.name
-    user.track = form.field
-    user.school = form.university
-    user.portfolio_url = str(form.portfolio) if form.portfolio else None
+    user.name = form.name
+    user.field = form.field
+    user.university = form.university
+    user.portfolio = str(form.portfolio) if form.portfolio else None
     # 이메일이 제공된 경우, 비어있다면 갱신
     if form.email and not user.email:
         user.email = str(form.email)
@@ -502,7 +502,7 @@ async def complete_signup(form: SignupForm, db: Session = Depends(get_db)):
 
     db.commit()
     db.refresh(user)
-    logging.info(f"signup completed: user_id={user.user_id}, nickname={user.nickname}, track={user.track}, school={user.school}, portfolio_url={user.portfolio_url}, email={user.email}")
+    logging.info(f"signup completed: user_id={user.user_id}, nickname={user.name}, track={user.field}, school={user.university}, portfolio_url={user.portfolio}, email={user.email}")
 
     access = create_access_token({"sub": user.user_id})
     return {"access_token": access, "user_id": user.user_id} 
