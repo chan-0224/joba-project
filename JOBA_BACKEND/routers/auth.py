@@ -70,8 +70,8 @@ async def me(current_user: User = Depends(get_current_user)):
         - id: DB 내부 ID (integer)
         - user_id: 소셜 로그인 기반 문자열 ID (예: "kakao_12345")
         - email: 이메일 주소
-        - nickname: 닉네임
-        - track: 트랙 정보
+        - name: 닉네임
+        - field: 트랙 정보
         - is_onboarded: 온보딩 완료 여부
     
     Note:
