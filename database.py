@@ -142,7 +142,7 @@ class ProfileCareer(Base):
     __tablename__ = "profile_careers"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    user_id = Column(String(100), ForeignKey("users.user_id", ondelete="CASCADE"))
     year = Column(Integer, nullable=False)
     description = Column(Text, nullable=False)
 
