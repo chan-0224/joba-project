@@ -4,7 +4,7 @@ from database import User, ProfileCareer, Application, Post
 import json
 
 
-def update_profile(db: Session, user: User, field: str, university: str, portfolio: str, careers: str, avatar_url: str = None, cover_url: str = None):
+def update_profile(db: Session, user: User, field: str, university: str, portfolio: str, careers: str, avatar_url: str = None, banner_url: str = None):
     """
     사용자 프로필 정보를 업데이트합니다.
     
@@ -19,7 +19,7 @@ def update_profile(db: Session, user: User, field: str, university: str, portfol
         portfolio (str): 포트폴리오 URL
         careers (str): JSON 문자열 형태의 경력 데이터
         avatar_url (str, optional): 아바타 이미지 URL
-        cover_url (str, optional): 커버 이미지 URL
+        banner_url (str, optional): 배너 이미지 URL
 
     Returns:
         User: 업데이트된 사용자 객체
@@ -35,8 +35,8 @@ def update_profile(db: Session, user: User, field: str, university: str, portfol
         user.portfolio = portfolio
     if avatar_url is not None:
         user.avatar_url = avatar_url
-    if cover_url is not None:
-        user.cover_url = cover_url
+    if banner_url is not None:
+        user.banner_url = banner_url
 
 
     if careers:

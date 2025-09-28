@@ -226,7 +226,7 @@ class UserProfileResponse(BaseModel):  # 프로필 조회 응답
     university: Optional[str] = None
     portfolio: Optional[str] = None
     avatar_url: Optional[str] = None
-    cover_url: Optional[str] = None
+    banner_url: Optional[str] = None
     timetable_url: Optional[str] = None
     careers: Dict[str, List[dict]]
     recent_projects: List[RecentProjectResponse]

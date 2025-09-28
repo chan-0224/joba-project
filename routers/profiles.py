@@ -24,7 +24,7 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
     Returns:
         UserProfileResponse: 사용자 프로필 응답
         - 기본 정보: user_id, email, field, university, portfolio
-        - 이미지 URL: avatar_url, cover_url, timetable_url
+        - 이미지 URL: avatar_url, banner_url, timetable_url
         - 경력 정보: careers (연도별로 그룹화된 딕셔너리)
         - 최근 프로젝트: recent_projects (최대 2개, 합격한 프로젝트만)
 
@@ -56,7 +56,7 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
         "university": user.university,
         "portfolio": user.portfolio,
         "avatar_url": user.avatar_url,
-        "cover_url": user.cover_url,
+        "banner_url": user.banner_url,
         "timetable_url": user.timetable_url,
         "careers": grouped_careers,
         "recent_projects": recent_projects
@@ -113,13 +113,13 @@ def update_user_profile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    avatar_url, cover_url = None, None
+    avatar_url, banner_url = None, None
     if avatar:
         avatar_url = upload_avatar(avatar, user_id)
     if cover:
-        cover_url = upload_cover(cover, user_id)
+        banner_url = upload_cover(cover, user_id)
 
-    updated_user = update_profile(db, user, field, university, portfolio, careers, avatar_url, cover_url)
+    updated_user = update_profile(db, user, field, university, portfolio, careers, avatar_url, banner_url)
     return {"message": "프로필이 성공적으로 업데이트되었습니다.", "profile": updated_user}
 
 @router.post("/{user_id}/upload/timetable")

@@ -126,7 +126,7 @@ class User(Base):
 
     # 프로필 관련 컬럼들 (직접 프로필에서 관리하는 요소들)
     avatar_url = Column(String(500))     # 프로필 사진 URL
-    cover_url = Column(String(500))      # 커버 사진 URL
+    banner_url = Column(String(500))      # 배너 이미지 URL
     timetable_url = Column(String(500)) # 시간표 이미지 URL
 
     careers = relationship("ProfileCareer", back_populates="user", cascade="all, delete-orphan")
