@@ -222,6 +222,7 @@ class RecentProjectResponse(BaseModel):  # 최근 프로젝트
 class UserProfileResponse(BaseModel):  # 프로필 조회 응답
     user_id: str
     email: str
+    name: Optional[str] = None
     field: Optional[str] = None
     university: Optional[str] = None
     portfolio: Optional[str] = None

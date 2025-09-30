@@ -52,6 +52,7 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
     return {
         "user_id": user.user_id,
         "email": user.email,
+        "name": user.name,
         "field": user.field,
         "university": user.university,
         "portfolio": user.portfolio,
