@@ -43,12 +43,16 @@ app.add_middleware(
         "http://localhost:5173",  # 로컬 개발용
         "http://localhost:3000",  # 다른 로컬 포트도 추가
         "http://localhost:8080",  # 추가 로컬 포트
-        "https://ssajava-front.vercel.app",  # 프론트엔드 배포 URL
-        "https://ssajava-front.vercel.app/",  # 슬래시 포함 버전
-        # Render 환경에서 추가할 수 있는 도메인들
-        "https://joba-frontend.onrender.com",  # Render 프론트엔드 (예시)
-        "https://joba-frontend.vercel.app",  # Vercel 프론트엔드 (예시)
+        "http://127.0.0.1:5173",  # 로컬 호스트 대안
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8080",
+        # 명시적 고정 도메인(배포 본 도메인)
+        "https://ssajava-front.vercel.app",
+        "https://joba-frontend.onrender.com",
+        "https://joba-frontend.vercel.app",
     ],
+    # Vercel/Render 프리뷰 등 서브도메인 전체 허용
+    allow_origin_regex=r"https://.*\.(vercel\.app|onrender\.com)$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
