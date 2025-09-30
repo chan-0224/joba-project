@@ -120,8 +120,30 @@ def update_user_profile(
     if banner:
         banner_url = upload_cover(banner, user_id)
 
-    updated_user = update_profile(db, user, field, university, portfolio, careers, avatar_url, banner_url)
-    return {"message": "프로필이 성공적으로 업데이트되었습니다.", "profile": updated_user}
+    update_profile(db, user, field, university, portfolio, careers, avatar_url, banner_url)
+    # 최신 상태로 다시 조회하여 일관된 응답 반환
+    refreshed = db.query(User).filter(User.user_id == user_id).first()
+    recent_projects = get_recent_projects(db, user_id)
+    grouped_careers = defaultdict(list)
+    for c in sorted(refreshed.careers, key=lambda x: (-x.year, x.id)):
+        grouped_careers[str(c.year)].append({
+            "id": c.id,
+            "description": c.description
+        })
+    profile = {
+        "user_id": refreshed.user_id,
+        "email": refreshed.email,
+        "name": refreshed.name,
+        "field": refreshed.field,
+        "university": refreshed.university,
+        "portfolio": refreshed.portfolio,
+        "avatar_url": refreshed.avatar_url,
+        "banner_url": refreshed.banner_url,
+        "timetable_url": refreshed.timetable_url,
+        "careers": grouped_careers,
+        "recent_projects": recent_projects
+    }
+    return {"message": "프로필이 성공적으로 업데이트되었습니다.", "profile": profile}
 
 @router.post("/{user_id}/upload/timetable")
 def upload_timetable_api(

@@ -51,7 +51,8 @@ def update_profile(db: Session, user: User, field: str, university: str, portfol
                 career.year = c["year"]
                 career.description = c["description"]
             else:
-                new_career = ProfileCareer(user_id=user.id, year=c["year"], description=c["description"])
+                # ProfileCareer.user_id 는 users.user_id (문자열, 소셜 ID)와 FK 매핑
+                new_career = ProfileCareer(user_id=user.user_id, year=c["year"], description=c["description"])
                 db.add(new_career)
 
 
