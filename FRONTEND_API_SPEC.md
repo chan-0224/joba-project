@@ -131,7 +131,7 @@ const ProfileCard = ({ profile }) => { /* 프로필 카드 */ }
 const ProfileForm = ({ profile, onSubmit }) => { /* 프로필 수정 폼 */ }
 const CareerList = ({ careers }) => { /* 경력 목록 */ }
 const CareerForm = ({ career, onSubmit, onDelete }) => { /* 경력 폼 */ }
-const ProfileImage = ({ imageUrl, type }) => { /* 프로필 이미지 (avatar, cover, timetable) */ }
+const ProfileImage = ({ imageUrl, type }) => { /* 프로필 이미지 (avatar, banner, timetable) */ }
 const RecentProjects = ({ projects }) => { /* 최근 프로젝트 목록 */ }
 
 // 인증 관련 컴포넌트
@@ -440,7 +440,7 @@ const profileUrl = 'https://joba-project.onrender.com/v1/profile/kakao_12345';
   "school": "한국대학교",
   "portfolio_url": "https://portfolio.example.com",
   "avatar_url": "https://storage.googleapis.com/joba-bucket/profiles/kakao_12345/avatars/abc123.jpg",
-  "cover_url": "https://storage.googleapis.com/joba-bucket/profiles/kakao_12345/covers/def456.jpg",
+  "banner_url": "https://storage.googleapis.com/joba-bucket/profiles/kakao_12345/covers/def456.jpg",
   "timetable_url": "https://storage.googleapis.com/joba-bucket/profiles/kakao_12345/timetables/ghi789.jpg",
   "careers": {
     "2024": [
@@ -478,7 +478,7 @@ const updateProfileWithImage = async (userId, profileData) => {
   
   // 이미지 파일들
   if (profileData.avatar) formData.append('avatar', profileData.avatar);
-  if (profileData.cover) formData.append('cover', profileData.cover);
+  if (profileData.banner) formData.append('banner', profileData.banner);
   
   const response = await fetch(`/v1/profile/${userId}`, {
     method: 'PUT',

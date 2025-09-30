@@ -71,7 +71,7 @@ def update_user_profile(
     portfolio: str = Form(None),
     careers: str = Form(None),  # JSON 문자열
     avatar: UploadFile = File(None),
-    cover: UploadFile = File(None),
+    banner: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -87,7 +87,7 @@ def update_user_profile(
         portfolio (str, optional): 포트폴리오 URL (Form 데이터)
         careers (str, optional): JSON 문자열 형태의 경력 데이터 (Form 데이터)
         avatar (UploadFile, optional): 아바타 이미지 파일
-        cover (UploadFile, optional): 커버 이미지 파일
+        banner (UploadFile, optional): 배너 이미지 파일
         db (Session): 데이터베이스 세션
         current_user (User): 현재 로그인된 사용자
 
@@ -117,8 +117,8 @@ def update_user_profile(
     avatar_url, banner_url = None, None
     if avatar:
         avatar_url = upload_avatar(avatar, user_id)
-    if cover:
-        banner_url = upload_cover(cover, user_id)
+    if banner:
+        banner_url = upload_cover(banner, user_id)
 
     updated_user = update_profile(db, user, field, university, portfolio, careers, avatar_url, banner_url)
     return {"message": "프로필이 성공적으로 업데이트되었습니다.", "profile": updated_user}
