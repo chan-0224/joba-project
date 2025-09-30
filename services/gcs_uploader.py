@@ -63,6 +63,14 @@ def upload_file_to_gcs(file_object: UploadFile, destination_blob_name: str) -> s
         
         # 파일 업로드
         blob.upload_from_file(file_object.file, content_type=file_object.content_type)
+
+        # 이미지 파일은 항상 public-read로 전환
+        try:
+            if file_object.content_type and file_object.content_type.startswith("image/"):
+                blob.make_public()
+        except Exception:
+            pass
+
         return f"https://storage.googleapis.com/{settings.GCS_BUCKET_NAME}/{destination_blob_name}"
     except Exception as e:
         logging.error("GCS 파일 업로드 실패: %s", e)
@@ -163,13 +171,13 @@ def upload_profile_image(file: UploadFile, user_id: str, kind: str) -> str:
     dest = generate_profile_image_blob_name(user_id, kind, file.filename)
     url = upload_file_to_gcs(file, dest)
 
+    # 프로필 이미지는 항상 public-read로 전환
     try:
-        if getattr(settings, "GCS_PUBLIC_READ", True):
-            blob = bucket.blob(dest)
-            try:
-                blob.make_public()
-            except Exception:
-                pass
+        blob = bucket.blob(dest)
+        try:
+            blob.make_public()
+        except Exception:
+            pass
     except Exception:
         pass
 
