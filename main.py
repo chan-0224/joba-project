@@ -133,6 +133,28 @@ def on_startup():
                     print("✅ posts.image_url 컬럼 길이 적절함")
             except Exception as e:
                 print(f"⚠️ posts.image_url 컬럼 길이 점검/확장 중 경고: {e}")
+
+            # posts.user_id 타입을 VARCHAR(100)으로 강제 (정수형 → 문자열로 전환)
+            try:
+                result = conn.execute(text("""
+                    SELECT data_type
+                    FROM information_schema.columns
+                    WHERE table_name = 'posts' AND column_name = 'user_id'
+                """))
+                row = result.fetchone()
+                current_type = row[0] if row else None
+                if current_type and current_type != 'character varying':
+                    print(f"posts.user_id 컬럼 타입 변경 중 ({current_type} -> VARCHAR(100))...")
+                    conn.execute(text("""
+                        ALTER TABLE posts
+                        ALTER COLUMN user_id TYPE VARCHAR(100) USING user_id::text
+                    """))
+                    conn.commit()
+                    print("✅ posts.user_id 컬럼 타입 변경 완료")
+                else:
+                    print("✅ posts.user_id 컬럼 타입 적절함")
+            except Exception as e:
+                print(f"⚠️ posts.user_id 컬럼 타입 점검/변경 중 경고: {e}")
                 
     except Exception as e:
         print(f"❌ 데이터베이스 스키마 업데이트 실패: {e}")
