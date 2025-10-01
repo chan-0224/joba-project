@@ -2,6 +2,7 @@ import os
 from typing import Optional
 from pydantic_settings import BaseSettings
 
+
 class Settings(BaseSettings):
     # 데이터베이스 설정
     DATABASE_URL: str

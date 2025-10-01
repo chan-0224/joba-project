@@ -14,7 +14,11 @@ def update_profile(db: Session, user: User, name: str, field: str, university: s
     Args:
         db (Session): 데이터베이스 세션
         user (User): 업데이트 대상 사용자 객체
+<<<<<<< HEAD
         name (str): 닉네임
+=======
+        name (str): 업데이트 대상 사용자 이름
+>>>>>>> c0eb495ba52b54d010312f261670b012e76b5b28
         field (str): 트랙 정보
         university (str): 학교 정보
         portfolio (str): 포트폴리오 URL

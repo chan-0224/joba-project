@@ -85,7 +85,7 @@ def update_user_profile(
     
     Args:
         user_id (str): 수정할 사용자 ID (소셜 로그인 기반)
-        name (str, optional): 닉네임 (Form 데이터)
+        name (str, optional): 이름 (Form 데이터)
         field (str, optional): 트랙 정보 (Form 데이터)
         university (str, optional): 학교 정보 (Form 데이터)
         portfolio (str, optional): 포트폴리오 URL (Form 데이터)
