@@ -56,11 +56,9 @@ async def create_post(
     
     # DB에 공고 정보 저장
     try:
-        # user_id는 DB에 저장된 값을 우선 사용하고, 없을 경우 provider 기반 생성으로 폴백
-        user_id = getattr(current_user, "user_id", None)
-        if not user_id:
-            from services.user_service import get_user_id_from_user
-            user_id = get_user_id_from_user(current_user)
+        # 호환성 확보: DB 스키마가 정수 user_id였던 과거 버전을 고려하여 숫자 PK를 저장
+        # (VARCHAR 컬럼이어도 '3' 문자열 저장 가능, INTEGER 컬럼이면 자동 캐스팅)
+        user_id = str(current_user.id)
         
         post = Post(
             user_id=user_id,
