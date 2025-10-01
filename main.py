@@ -111,6 +111,28 @@ def on_startup():
                 print("✅ user_id 컬럼 추가 완료")
             else:
                 print("✅ user_id 컬럼이 이미 존재합니다")
+
+            # posts.image_url 길이 확장 (255 -> 500)
+            try:
+                result = conn.execute(text("""
+                    SELECT character_maximum_length
+                    FROM information_schema.columns
+                    WHERE table_name = 'posts' AND column_name = 'image_url'
+                """))
+                length_row = result.fetchone()
+                current_len = length_row[0] if length_row else None
+                if current_len is not None and current_len < 500:
+                    print("posts.image_url 컬럼 길이 확장 중 (255 -> 500)...")
+                    conn.execute(text("""
+                        ALTER TABLE posts
+                        ALTER COLUMN image_url TYPE VARCHAR(500)
+                    """))
+                    conn.commit()
+                    print("✅ posts.image_url 컬럼 길이 확장 완료")
+                else:
+                    print("✅ posts.image_url 컬럼 길이 적절함")
+            except Exception as e:
+                print(f"⚠️ posts.image_url 컬럼 길이 점검/확장 중 경고: {e}")
                 
     except Exception as e:
         print(f"❌ 데이터베이스 스키마 업데이트 실패: {e}")

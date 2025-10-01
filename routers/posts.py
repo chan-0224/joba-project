@@ -56,8 +56,11 @@ async def create_post(
     
     # DB에 공고 정보 저장
     try:
-        from services.user_service import get_user_id_from_user
-        user_id = get_user_id_from_user(current_user)
+        # user_id는 DB에 저장된 값을 우선 사용하고, 없을 경우 provider 기반 생성으로 폴백
+        user_id = getattr(current_user, "user_id", None)
+        if not user_id:
+            from services.user_service import get_user_id_from_user
+            user_id = get_user_id_from_user(current_user)
         
         post = Post(
             user_id=user_id,
@@ -77,7 +80,8 @@ async def create_post(
         return post
     except Exception as e:
         db.rollback()
-        logging.error(f"DB 저장 실패: {e}")
+        # 상세 원인 파악을 위해 traceback 포함 로깅
+        logging.error(f"DB 저장 실패: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
             detail="공고 저장에 실패했습니다."

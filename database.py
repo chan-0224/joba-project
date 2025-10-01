@@ -15,7 +15,7 @@ class Post(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String, nullable=False, index=True)  # 소셜 ID 기반 user_id
-    image_url = Column(String(255), nullable=False)
+    image_url = Column(String(500), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
     recruitment_field = Column(String(50), nullable=False, index=True)  # 인덱스 추가
