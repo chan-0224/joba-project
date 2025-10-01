@@ -66,7 +66,6 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
 @router.put("/{user_id}")
 def update_user_profile(
     user_id: str,
-    name: str = Form(None),
     field: str = Form(None),
     university: str = Form(None),
     portfolio: str = Form(None),
@@ -122,7 +121,7 @@ def update_user_profile(
     if banner:
         banner_url = upload_cover(banner, user_id)
 
-    update_profile(db, user, name, field, university, portfolio, careers, avatar_url, banner_url)
+    update_profile(db, user, field, university, portfolio, careers, avatar_url, banner_url)
     # 최신 상태로 다시 조회하여 일관된 응답 반환
     refreshed = db.query(User).filter(User.user_id == user_id).first()
     recent_projects = get_recent_projects(db, user_id)
@@ -135,7 +134,6 @@ def update_user_profile(
     profile = {
         "user_id": refreshed.user_id,
         "email": refreshed.email,
-        "name": refreshed.name,
         "field": refreshed.field,
         "university": refreshed.university,
         "portfolio": refreshed.portfolio,
