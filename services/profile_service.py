@@ -4,16 +4,17 @@ from database import User, ProfileCareer, Application, Post
 import json
 
 
-def update_profile(db: Session, user: User, field: str, university: str, portfolio: str, careers: str, avatar_url: str = None, banner_url: str = None):
+def update_profile(db: Session, user: User, name: str, field: str, university: str, portfolio: str, careers: str, avatar_url: str = None, banner_url: str = None):
     """
     사용자 프로필 정보를 업데이트합니다.
     
-    - 트랙, 학교, 포트폴리오 링크, 프로필 사진/커버 이미지를 수정할 수 있습니다.
+    - 닉네임, 트랙, 학교, 포트폴리오 링크, 프로필 사진/커버 이미지를 수정할 수 있습니다.
     - careers(JSON 문자열)를 전달하면 기존 경력을 수정/추가/삭제 처리합니다.
 
     Args:
         db (Session): 데이터베이스 세션
         user (User): 업데이트 대상 사용자 객체
+        name (str): 닉네임
         field (str): 트랙 정보
         university (str): 학교 정보
         portfolio (str): 포트폴리오 URL
@@ -27,6 +28,8 @@ def update_profile(db: Session, user: User, field: str, university: str, portfol
     Raises:
         HTTPException: careers JSON이 잘못된 경우 (ValueError 발생 시 상위에서 처리 필요)
     """
+    if name is not None:
+        user.name = name
     if field is not None:
         user.field = field
     if university is not None:
@@ -40,19 +43,37 @@ def update_profile(db: Session, user: User, field: str, university: str, portfol
 
 
     if careers:
+        # careers는 JSON 문자열이어야 하며, 리스트 형태여야 함
         careers_data = json.loads(careers)
+        if not isinstance(careers_data, list):
+            raise ValueError("careers must be a JSON array")
         existing_careers = {c.id: c for c in user.careers}
         incoming_ids = {c.get("id") for c in careers_data if c.get("id")}
 
 
         for c in careers_data:
+            # 필수 키 검증
+            if not isinstance(c, dict):
+                raise ValueError("career item must be an object")
+            if "year" not in c or "description" not in c:
+                raise ValueError("career item requires 'year' and 'description'")
+
+            # 타입 정규화 및 검증
+            try:
+                year_value = int(c["year"])
+            except Exception:
+                raise ValueError("career.year must be an integer")
+            description_value = str(c["description"]).strip()
+            if not description_value:
+                raise ValueError("career.description must be non-empty")
+
             if c.get("id") and c.get("id") in existing_careers:
                 career = existing_careers[c["id"]]
-                career.year = c["year"]
-                career.description = c["description"]
+                career.year = year_value
+                career.description = description_value
             else:
                 # ProfileCareer.user_id 는 users.user_id (문자열, 소셜 ID)와 FK 매핑
-                new_career = ProfileCareer(user_id=user.user_id, year=c["year"], description=c["description"])
+                new_career = ProfileCareer(user_id=user.user_id, year=year_value, description=description_value)
                 db.add(new_career)
 
 

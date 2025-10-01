@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+import json
+import logging
 from sqlalchemy.orm import Session
 from collections import defaultdict
 from database import get_db
@@ -66,6 +68,7 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
 @router.put("/{user_id}")
 def update_user_profile(
     user_id: str,
+    name: str = Form(None),
     field: str = Form(None),
     university: str = Form(None),
     portfolio: str = Form(None),
@@ -82,6 +85,7 @@ def update_user_profile(
     
     Args:
         user_id (str): 수정할 사용자 ID (소셜 로그인 기반)
+        name (str, optional): 닉네임 (Form 데이터)
         field (str, optional): 트랙 정보 (Form 데이터)
         university (str, optional): 학교 정보 (Form 데이터)
         portfolio (str, optional): 포트폴리오 URL (Form 데이터)
@@ -120,7 +124,12 @@ def update_user_profile(
     if banner:
         banner_url = upload_cover(banner, user_id)
 
-    update_profile(db, user, field, university, portfolio, careers, avatar_url, banner_url)
+    # update_profile 과정에서 careers JSON 파싱 오류 등이 발생하면 400으로 변환
+    try:
+        update_profile(db, user, name, field, university, portfolio, careers, avatar_url, banner_url)
+    except (ValueError, TypeError, json.JSONDecodeError) as e:
+        logging.warning(f"프로필 업데이트 유효성 오류: {e}")
+        raise HTTPException(status_code=400, detail="Invalid profile payload: careers or fields invalid")
     # 최신 상태로 다시 조회하여 일관된 응답 반환
     refreshed = db.query(User).filter(User.user_id == user_id).first()
     recent_projects = get_recent_projects(db, user_id)
