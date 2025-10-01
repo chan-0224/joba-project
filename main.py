@@ -177,6 +177,41 @@ def on_startup():
                     print("✅ posts.deadline 컬럼 타입 적절함")
             except Exception as e:
                 print(f"⚠️ posts.deadline 컬럼 타입 점검/변경 중 경고: {e}")
+            
+            # posts.views 컬럼 NOT NULL + 기본값 0 보정
+            try:
+                result = conn.execute(text("""
+                    SELECT is_nullable, column_default
+                    FROM information_schema.columns
+                    WHERE table_name = 'posts' AND column_name = 'views'
+                """))
+                row = result.fetchone()
+                if not row:
+                    print("posts.views 컬럼이 없습니다. 추가 중...")
+                    conn.execute(text("""
+                        ALTER TABLE posts
+                        ADD COLUMN views INTEGER NOT NULL DEFAULT 0
+                    """))
+                    conn.commit()
+                    print("✅ posts.views 컬럼 추가(기본값 0, NOT NULL) 완료")
+                else:
+                    is_nullable, column_default = row
+                    # NULL 존재 시 0으로 채우기
+                    conn.execute(text("UPDATE posts SET views = 0 WHERE views IS NULL"))
+                    # 기본값과 NOT NULL 강제
+                    if is_nullable == 'YES' or not column_default:
+                        print("posts.views 제약 보정 중 (NOT NULL + DEFAULT 0)...")
+                        conn.execute(text("""
+                            ALTER TABLE posts
+                            ALTER COLUMN views SET DEFAULT 0,
+                            ALTER COLUMN views SET NOT NULL
+                        """))
+                        conn.commit()
+                        print("✅ posts.views 제약 보정 완료")
+                    else:
+                        print("✅ posts.views 제약 적절함")
+            except Exception as e:
+                print(f"⚠️ posts.views 컬럼 보정 중 경고: {e}")
                 
     except Exception as e:
         print(f"❌ 데이터베이스 스키마 업데이트 실패: {e}")

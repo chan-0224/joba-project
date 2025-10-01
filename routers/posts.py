@@ -71,6 +71,7 @@ async def create_post(
             target_school_name=post_data.target_school_name,
             deadline=post_data.deadline,
             external_link=post_data.external_link,
+            views=0,
         )
         db.add(post)
         db.commit()
