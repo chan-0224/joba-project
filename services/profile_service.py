@@ -4,7 +4,7 @@ from database import User, ProfileCareer, Application, Post
 import json
 
 
-def update_profile(db: Session, user: User, field: str, university: str, portfolio: str, careers: str, avatar_url: str = None, banner_url: str = None):
+def update_profile(db: Session, user: User, name: str, field: str, university: str, portfolio: str, careers: str, avatar_url: str = None, banner_url: str = None):
     """
     사용자 프로필 정보를 업데이트합니다.
     
@@ -14,6 +14,7 @@ def update_profile(db: Session, user: User, field: str, university: str, portfol
     Args:
         db (Session): 데이터베이스 세션
         user (User): 업데이트 대상 사용자 객체
+        name (str): 업데이트 대상 사용자 이름
         field (str): 트랙 정보
         university (str): 학교 정보
         portfolio (str): 포트폴리오 URL
@@ -27,6 +28,8 @@ def update_profile(db: Session, user: User, field: str, university: str, portfol
     Raises:
         HTTPException: careers JSON이 잘못된 경우 (ValueError 발생 시 상위에서 처리 필요)
     """
+    if name is not None:
+        user.name = name
     if field is not None:
         user.field = field
     if university is not None:

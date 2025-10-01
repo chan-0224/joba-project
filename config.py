@@ -1,6 +1,9 @@
 import os
 from typing import Optional
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv # 로컬 개발용 .env 파일 로드
+
+load_dotenv()  # 로컬 개발용 .env 파일 로드
 
 class Settings(BaseSettings):
     # 데이터베이스 설정
