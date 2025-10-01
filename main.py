@@ -155,6 +155,28 @@ def on_startup():
                     print("✅ posts.user_id 컬럼 타입 적절함")
             except Exception as e:
                 print(f"⚠️ posts.user_id 컬럼 타입 점검/변경 중 경고: {e}")
+
+            # posts.deadline 타입을 TIMESTAMP WITHOUT TIME ZONE으로 전환 (과거 DATE였던 스키마 호환)
+            try:
+                result = conn.execute(text("""
+                    SELECT data_type
+                    FROM information_schema.columns
+                    WHERE table_name = 'posts' AND column_name = 'deadline'
+                """))
+                row = result.fetchone()
+                current_type = row[0] if row else None
+                if current_type and current_type != 'timestamp without time zone':
+                    print(f"posts.deadline 컬럼 타입 변경 중 ({current_type} -> TIMESTAMP WITHOUT TIME ZONE)...")
+                    conn.execute(text("""
+                        ALTER TABLE posts
+                        ALTER COLUMN deadline TYPE TIMESTAMP WITHOUT TIME ZONE USING deadline::timestamp
+                    """))
+                    conn.commit()
+                    print("✅ posts.deadline 컬럼 타입 변경 완료")
+                else:
+                    print("✅ posts.deadline 컬럼 타입 적절함")
+            except Exception as e:
+                print(f"⚠️ posts.deadline 컬럼 타입 점검/변경 중 경고: {e}")
                 
     except Exception as e:
         print(f"❌ 데이터베이스 스키마 업데이트 실패: {e}")
