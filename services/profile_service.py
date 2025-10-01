@@ -28,56 +28,60 @@ def update_profile(db: Session, user: User, name: str, field: str, university: s
         HTTPException: careers JSON이 잘못된 경우 또는 DB 오류 발생 시
     """
     try:
-        with db.begin():
-            if name is not None:
-                user.name = name
-            if field is not None:
-                user.field = field
-            if university is not None:
-                user.university = university
-            if portfolio is not None:
-                user.portfolio = portfolio
-            if avatar_url is not None:
-                user.avatar_url = avatar_url
-            if banner_url is not None:
-                user.banner_url = banner_url
+        if name is not None:
+            user.name = name
+        if field is not None:
+            user.field = field
+        if university is not None:
+            user.university = university
+        if portfolio is not None:
+            user.portfolio = portfolio
+        if avatar_url is not None:
+            user.avatar_url = avatar_url
+        if banner_url is not None:
+            user.banner_url = banner_url
 
 
-            if careers:
-                try:
-                    careers_data = json.loads(careers)
-                except ValueError:
-                    raise HTTPException(status_code=400, detail="Invalid careers JSON")
-                normalized = []
+        if careers:
+            try:
+                careers_data = json.loads(careers)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid careers JSON")
+            normalized = []
 
-                # dict → list 변환 (프론트는 연도별 object 구조로 보냄)
-                if isinstance(careers_data, dict):
-                    for year, items in careers_data.items():
-                        for item in items:
-                            normalized.append({
-                                "year": int(year),
-                                "description": item.get("description")
-                            })
-                elif isinstance(careers_data, list):
-                    normalized = careers_data
-                else:
-                    raise HTTPException(status_code=400, detail="Invalid careers format")
-                db.query(ProfileCareer).filter(ProfileCareer.user_id == user.user_id).delete()
+            # dict → list 변환 (프론트는 연도별 object 구조로 보냄)
+            if isinstance(careers_data, dict):
+                for year, items in careers_data.items():
+                    for item in items:
+                        normalized.append({
+                            "year": int(year),
+                            "description": item.get("description")
+                        })
+            elif isinstance(careers_data, list):
+                normalized = careers_data
+            else:
+                raise HTTPException(status_code=400, detail="Invalid careers format")
+            
+            # 기존 경력 삭제 후 교체
+            db.query(ProfileCareer).filter(ProfileCareer.user_id == user.user_id).delete()
+            for c in normalized:
+                new_career = ProfileCareer(
+                    user_id=user.user_id,
+                    year=c["year"],
+                    description=c["description"]
+                )
+                db.add(new_career)
 
-                for c in normalized:
-                    new_career = ProfileCareer(
-                        user_id=user.user_id,
-                        year=c["year"],
-                        description=c["description"]
-                    )
-                    db.add(new_career)
-
-        # commit 이후 user 갱신
+        db.commit()
         db.refresh(user)
         return user
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Profile update failed: {str(e)}")
+        db.rollback()  # ✅ 오류 시 롤백 보장
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Profile update failed: {repr(e)}")
+
 
 def get_recent_projects(db: Session, social_user_id: str):
     """
