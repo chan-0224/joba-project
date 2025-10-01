@@ -1,28 +1,23 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
 from database import User, ProfileCareer, Application, Post
 import json
+from fastapi import HTTPException
 
 
 def update_profile(db: Session, user: User, name: str, field: str, university: str, portfolio: str, careers: str, avatar_url: str = None, banner_url: str = None):
     """
     사용자 프로필 정보를 업데이트합니다.
-    
     - 닉네임, 트랙, 학교, 포트폴리오 링크, 프로필 사진/커버 이미지를 수정할 수 있습니다.
-    - careers(JSON 문자열)를 전달하면 기존 경력을 수정/추가/삭제 처리합니다.
+    - careers(JSON 문자열)를 전달하면 해당 유저의 기존 경력은 모두 삭제되고, 새로 전달된 데이터로 전체 교체됩니다.
 
     Args:
         db (Session): 데이터베이스 세션
         user (User): 업데이트 대상 사용자 객체
-<<<<<<< HEAD
         name (str): 닉네임
-=======
-        name (str): 업데이트 대상 사용자 이름
->>>>>>> c0eb495ba52b54d010312f261670b012e76b5b28
         field (str): 트랙 정보
         university (str): 학교 정보
         portfolio (str): 포트폴리오 URL
-        careers (str): JSON 문자열 형태의 경력 데이터
+        careers (str): JSON 문자열 형태의 경력 데이터 (dict 또는 list 허용)
         avatar_url (str, optional): 아바타 이미지 URL
         banner_url (str, optional): 배너 이미지 URL
 
@@ -30,66 +25,59 @@ def update_profile(db: Session, user: User, name: str, field: str, university: s
         User: 업데이트된 사용자 객체
 
     Raises:
-        HTTPException: careers JSON이 잘못된 경우 (ValueError 발생 시 상위에서 처리 필요)
+        HTTPException: careers JSON이 잘못된 경우 또는 DB 오류 발생 시
     """
-    if name is not None:
-        user.name = name
-    if field is not None:
-        user.field = field
-    if university is not None:
-        user.university = university
-    if portfolio is not None:
-        user.portfolio = portfolio
-    if avatar_url is not None:
-        user.avatar_url = avatar_url
-    if banner_url is not None:
-        user.banner_url = banner_url
+    try:
+        with db.begin():
+            if name is not None:
+                user.name = name
+            if field is not None:
+                user.field = field
+            if university is not None:
+                user.university = university
+            if portfolio is not None:
+                user.portfolio = portfolio
+            if avatar_url is not None:
+                user.avatar_url = avatar_url
+            if banner_url is not None:
+                user.banner_url = banner_url
 
 
-    if careers:
-        # careers는 JSON 문자열이어야 하며, 리스트 형태여야 함
-        careers_data = json.loads(careers)
-        if not isinstance(careers_data, list):
-            raise ValueError("careers must be a JSON array")
-        existing_careers = {c.id: c for c in user.careers}
-        incoming_ids = {c.get("id") for c in careers_data if c.get("id")}
+            if careers:
+                try:
+                    careers_data = json.loads(careers)
+                except ValueError:
+                    raise HTTPException(status_code=400, detail="Invalid careers JSON")
+                normalized = []
 
+                # dict → list 변환 (프론트는 연도별 object 구조로 보냄)
+                if isinstance(careers_data, dict):
+                    for year, items in careers_data.items():
+                        for item in items:
+                            normalized.append({
+                                "year": int(year),
+                                "description": item.get("description")
+                            })
+                elif isinstance(careers_data, list):
+                    normalized = careers_data
+                else:
+                    raise HTTPException(status_code=400, detail="Invalid careers format")
+                db.query(ProfileCareer).filter(ProfileCareer.user_id == user.user_id).delete()
 
-        for c in careers_data:
-            # 필수 키 검증
-            if not isinstance(c, dict):
-                raise ValueError("career item must be an object")
-            if "year" not in c or "description" not in c:
-                raise ValueError("career item requires 'year' and 'description'")
+                for c in normalized:
+                    new_career = ProfileCareer(
+                        user_id=user.user_id,
+                        year=c["year"],
+                        description=c["description"]
+                    )
+                    db.add(new_career)
 
-            # 타입 정규화 및 검증
-            try:
-                year_value = int(c["year"])
-            except Exception:
-                raise ValueError("career.year must be an integer")
-            description_value = str(c["description"]).strip()
-            if not description_value:
-                raise ValueError("career.description must be non-empty")
+        # commit 이후 user 갱신
+        db.refresh(user)
+        return user
 
-            if c.get("id") and c.get("id") in existing_careers:
-                career = existing_careers[c["id"]]
-                career.year = year_value
-                career.description = description_value
-            else:
-                # ProfileCareer.user_id 는 users.user_id (문자열, 소셜 ID)와 FK 매핑
-                new_career = ProfileCareer(user_id=user.user_id, year=year_value, description=description_value)
-                db.add(new_career)
-
-
-        for career_id, career in existing_careers.items():
-            if career_id not in incoming_ids:
-                db.delete(career)
-
-
-    db.commit()
-    db.refresh(user)
-    return user
-
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Profile update failed: {str(e)}")
 
 def get_recent_projects(db: Session, social_user_id: str):
     """
