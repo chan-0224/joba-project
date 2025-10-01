@@ -5,7 +5,8 @@
 JWT 토큰 기반의 인증 시스템을 사용합니다.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Header, Query
+from fastapi import APIRouter, Depends, HTTPException, Header, Query, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db, User
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/auth")
 
 
 def get_current_user(
-    authorization: str = Header(None, alias="Authorization"),
+    credentials: HTTPAuthorizationCredentials = Security(HTTPBearer(auto_error=False)),
     db: Session = Depends(get_db),
 ) -> User:
     """
@@ -36,10 +37,11 @@ def get_current_user(
     Raises:
         HTTPException: 토큰 없음, 토큰 만료, 사용자 없음
     """
-    if not authorization or not authorization.startswith("Bearer "):
+    # Swagger UI(/docs)에서도 Bearer 토큰을 설정 가능하도록 HTTPBearer 스키마 사용
+    if not credentials or not credentials.scheme or credentials.scheme.lower() != "bearer":
         raise HTTPException(401, "Missing or invalid Authorization header")
-    
-    token = authorization.split()[1]
+
+    token = credentials.credentials
     payload = decode_token(token)  # exp/만료 검증
     
     if not payload:
