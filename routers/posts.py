@@ -82,9 +82,10 @@ async def create_post(
         db.rollback()
         # 상세 원인 파악을 위해 traceback 포함 로깅
         logging.error(f"DB 저장 실패: {e}", exc_info=True)
+        # 디버깅 목적: 배포 환경에서 원인 파악을 위해 에러 클래스를 함께 노출 (문제 해결 후 일반 메시지로 복구 권장)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail="공고 저장에 실패했습니다."
+            detail=f"공고 저장에 실패했습니다: {e.__class__.__name__}: {e}"
         )
 
 
