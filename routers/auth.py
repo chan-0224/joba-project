@@ -74,6 +74,7 @@ async def me(current_user: User = Depends(get_current_user)):
         - email: 이메일 주소
         - name: 닉네임
         - field: 트랙 정보
+        - avatar_url: 프로필 이미지 URL
         - is_onboarded: 온보딩 완료 여부
     
     Note:
@@ -96,6 +97,7 @@ async def me(current_user: User = Depends(get_current_user)):
         "name": current_user.name,
         "field": current_user.field,
         "university": current_user.university,
+        "avatar_url": current_user.avatar_url,
         "is_onboarded": current_user.is_onboarded,
     }
 
