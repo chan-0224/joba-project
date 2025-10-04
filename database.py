@@ -151,6 +151,15 @@ class ProfileCareer(Base):
     user = relationship("User", back_populates="careers")
 
 
+class Notice(Base):
+    __tablename__ = "notices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)         # 공지 제목
+    content = Column(Text, nullable=False)              # 공지 내용
+    created_at = Column(DateTime, server_default=func.now())
+
+
 # DB 세션 의존성
 from typing import Generator
 
