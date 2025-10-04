@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from routers import posts, applications, post_questions, auth, profiles
+from routers import posts, applications, post_questions, auth, profiles, mypage, notices
 from database import Base, engine
 from datetime import datetime
 from fastapi import APIRouter
@@ -61,6 +61,8 @@ v1_router.include_router(applications.router, tags=["applications"])
 v1_router.include_router(post_questions.router, tags=["post_questions"])
 v1_router.include_router(auth.router, tags=["auth"])
 v1_router.include_router(profiles.router, tags=["profile"])
+v1_router.include_router(mypage.router, tags=["mypage"])
+v1_router.include_router(notices.router, tags=["notices"])
 
 # 메인 앱에 v1 라우터 포함
 app.include_router(v1_router)

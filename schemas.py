@@ -233,3 +233,22 @@ class UserProfileResponse(BaseModel):  # 프로필 조회 응답
 
     class Config:
         orm_mode = True
+
+    
+# 공지 목록에서 사용할 간단 응답
+class NoticeListItem(BaseModel):
+    id: int
+    title: str
+
+    class Config:
+        orm_mode = True
+
+# 공지 상세 응답
+class NoticeDetailResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    created_at: str  # "YYYY-MM-DD" 형식의 문자열
+
+    class Config:
+        orm_mode = True
