@@ -50,9 +50,17 @@ def get_current_user(
     # payload["sub"]가 user_id (문자열)이므로 User 테이블에서 직접 조회
     user_id = payload["sub"]
     user = db.query(User).filter(User.user_id == user_id).first()
-    
+
     if not user:
-        raise HTTPException(404, "User not found")
+        # 토큰의 sub가 소셜 user_id 패턴({provider}_{id})이면 최소 정보로 사용자 자동 생성 시도
+        try:
+            provider, provider_user_id = user_id.split("_", 1)
+            if provider in {"kakao", "naver", "google"} and provider_user_id:
+                user, _, _ = get_or_create_minimal(db, provider=provider, provider_user_id=provider_user_id, email=None)
+            else:
+                raise ValueError("invalid provider format")
+        except Exception:
+            raise HTTPException(404, "User not found")
     
     return user
 
