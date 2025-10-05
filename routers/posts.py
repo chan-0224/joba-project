@@ -56,9 +56,8 @@ async def create_post(
     
     # DB에 공고 정보 저장
     try:
-        # 호환성 확보: DB 스키마가 정수 user_id였던 과거 버전을 고려하여 숫자 PK를 저장
-        # (VARCHAR 컬럼이어도 '3' 문자열 저장 가능, INTEGER 컬럼이면 자동 캐스팅)
-        user_id = str(current_user.id)
+        # 일관성 유지: 소셜 user_id(예: kakao_...)를 저장
+        user_id = current_user.user_id
         
         post = Post(
             user_id=user_id,
