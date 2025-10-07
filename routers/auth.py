@@ -215,11 +215,20 @@ async def kakao_callback(
         token = kakao_auth.get_access_token(code)
         raw = kakao_auth.get_user_info(token)
         email, pid = extract_email_and_id("kakao", raw)
+        # 카카오 닉네임 추출(없으면 None)
+        profile = (raw or {}).get("properties", {}) if isinstance(raw, dict) else {}
+        nickname = profile.get("nickname")
         
         if not pid:
             raise HTTPException(400, "카카오 사용자의 id를 가져올 수 없습니다.")
 
-        user, user_id, _ = get_or_create_minimal(db, provider="kakao", provider_user_id=pid, email=email)
+        user, user_id, _ = get_or_create_minimal(
+            db,
+            provider="kakao",
+            provider_user_id=pid,
+            email=email,  # 동의 안 했으면 None
+            name=nickname,
+        )
 
         if not user.is_onboarded:
             # 신규 회원: 회원가입 필요
@@ -289,11 +298,12 @@ async def naver_callback(
         token = naver_auth.get_access_token(code, state)
         raw = naver_auth.get_user_info(token)
         email, pid = extract_email_and_id("naver", raw)
+        nickname = (raw.get("response") or {}).get("nickname") if isinstance(raw, dict) else None
         
         if not pid:
             raise HTTPException(400, "네이버 사용자의 id를 가져올 수 없습니다.")
 
-        user, user_id, _ = get_or_create_minimal(db, provider="naver", provider_user_id=pid, email=email)
+        user, user_id, _ = get_or_create_minimal(db, provider="naver", provider_user_id=pid, email=email, name=nickname)
 
         if not user.is_onboarded:
             # 신규 회원: 회원가입 필요
@@ -357,11 +367,12 @@ async def google_callback(
         token = google_auth.get_access_token(code)
         raw = google_auth.get_user_info(token)
         email, pid = extract_email_and_id("google", raw)
+        nickname = raw.get("name") if isinstance(raw, dict) else None
         
         if not pid:
             raise HTTPException(400, "구글 사용자의 id를 가져올 수 없습니다.")
 
-        user, user_id, _ = get_or_create_minimal(db, provider="google", provider_user_id=pid, email=email)
+        user, user_id, _ = get_or_create_minimal(db, provider="google", provider_user_id=pid, email=email, name=nickname)
 
         if not user.is_onboarded:
             # 신규 회원: 회원가입 필요

@@ -46,7 +46,7 @@ def get_user_id_from_user(user: User) -> str:
         return f"google_{user.google_id}"
     raise ValueError("No social ID found")
 
-def get_or_create_minimal(db: Session, *, provider: str, provider_user_id: str, email: str | None):
+def get_or_create_minimal(db: Session, *, provider: str, provider_user_id: str, email: str | None, name: str | None = None):
     """
     소셜 로그인 사용자 조회 또는 생성
     
@@ -80,7 +80,7 @@ def get_or_create_minimal(db: Session, *, provider: str, provider_user_id: str, 
             db.commit(); db.refresh(user)
         return user, user_id, False  # created=False
 
-    # 2) email 중복
+    # 2) email 중복 (이메일 제공된 경우에만)
     if email:
         existing = db.query(User).filter(User.email == email).first()
         if existing:
@@ -88,13 +88,17 @@ def get_or_create_minimal(db: Session, *, provider: str, provider_user_id: str, 
             # user_id도 설정
             if not existing.user_id:
                 existing.user_id = user_id
+            # 닉네임이 제공되면 갱신(비어있을 때만)
+            if name and not existing.name:
+                existing.name = name
             db.commit(); db.refresh(existing)
             return existing, user_id, False
 
     # 3) 새로(임시) 생성
     user = User(
-        email=email, 
+        email=email,  # None 허용
         user_id=user_id,  # user_id 설정
+        name=name,  # 닉네임 저장(없으면 None)
         **{PROVIDER_ID_FIELD[provider]: provider_user_id}, 
         is_onboarded=False
     )

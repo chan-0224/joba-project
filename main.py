@@ -214,6 +214,28 @@ def on_startup():
                         print("✅ posts.views 제약 적절함")
             except Exception as e:
                 print(f"⚠️ posts.views 컬럼 보정 중 경고: {e}")
+            
+            # users.email NULL 허용으로 보정 (기존 NOT NULL 스키마 호환)
+            try:
+                result = conn.execute(text("""
+                    SELECT is_nullable
+                    FROM information_schema.columns
+                    WHERE table_name = 'users' AND column_name = 'email'
+                """))
+                row = result.fetchone()
+                if row and row[0] == 'NO':
+                    print("users.email 컬럼 NULL 허용으로 변경 중 (SET NULLABLE)...")
+                    # PostgreSQL에서 NULL 허용으로 변경
+                    conn.execute(text("""
+                        ALTER TABLE users
+                        ALTER COLUMN email DROP NOT NULL
+                    """))
+                    conn.commit()
+                    print("✅ users.email 컬럼 NULL 허용 변경 완료")
+                else:
+                    print("✅ users.email 컬럼 NULL 허용 상태 또는 존재하지 않음")
+            except Exception as e:
+                print(f"⚠️ users.email NULL 허용 보정 중 경고: {e}")
                 
     except Exception as e:
         print(f"❌ 데이터베이스 스키마 업데이트 실패: {e}")
