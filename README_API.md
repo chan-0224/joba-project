@@ -47,6 +47,11 @@ JOBA 프로젝트의 백엔드 API 서버입니다.
 ### 회원가입
 - **회원가입 완료**: `POST /v1/auth/signup` (온보딩 정보 입력)
 
+### 로그인/사용자 생성 정책(변경 사항)
+- 소셜 로그인 콜백(카카오/네이버/구글)에서 이메일 동의를 받지 못해도, 제공자 ID(provider id)와 닉네임만으로 사용자 레코드를 생성합니다.
+- 기존 사용자 조회는 이메일이 아니라 제공자별 ID(kakao_id/naver_id/google_id)를 우선 사용합니다.
+- 인증 디펜던시(`get_current_user`)는 토큰의 `sub`가 `kakao_*/naver_*/google_*` 형태인데 DB에 사용자가 없을 경우 최소 정보로 자동 생성합니다.
+
 ## 📝 주요 기능
 
 ### 공고 관리
@@ -110,6 +115,9 @@ const RECRUITMENT_HEADCOUNTS = ["1~2인", "3~5인", "6~10인", "인원미정"];
 - `recruitment_headcount`: 모집 인원
 - `user_id`: 소셜 ID 기반 사용자 식별자 (예: `kakao_123456789`)
 
+### 저장 규칙(변경 사항)
+- `posts.user_id`에는 내부 정수 PK가 아닌 소셜 `user_id` 문자열이 저장됩니다. (예: `kakao_123456789`)
+
 ### 지원서 상태
 - `제출됨`: 초기 지원 상태
 - `열람됨`: 모집자가 상세 조회 (현재 미사용)
@@ -156,3 +164,15 @@ VITE_API_BASE_URL=https://joba-project.onrender.com/v1
 ```bash
 VITE_API_BASE_URL=https://joba-project.onrender.com/v1/posts
 ``` 
+
+## 🗄️ 데이터베이스 스키마 자동 보정(변경 사항)
+서버 시작 시 다음 스키마를 자동 점검/보정합니다.
+- `users.email`: NULL 허용으로 전환(선택 입력 허용)
+- `posts.image_url`: 길이 255 → 500으로 확장
+- `posts.user_id`: 문자열(VARCHAR(100))로 강제
+- `posts.deadline`: TIMESTAMP WITHOUT TIME ZONE로 정규화
+- `posts.views`: 기본값 0 + NOT NULL 보장
+
+## 🖼️ 업로드 공개 정책 참고
+- 이미지 업로드는 업로드 직후 공개(`blob.make_public()`)를 시도하여 `https://storage.googleapis.com/{bucket}/{path}`로 접근 가능합니다. 버킷 정책(PAP/UBLA/IAM/ACL)에 따라 공개 설정이 필요합니다.
+- 이미지 외 첨부파일(지원서 ATTACHMENT)은 버킷 정책에 따라 공개가 제한될 수 있습니다. 공개 접근이 필요하면 버킷에 공개 권한을 부여하거나(간편) 서명 URL 방식(보안)을 검토하세요.

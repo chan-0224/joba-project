@@ -33,6 +33,11 @@ JOBA 백엔드 API의 프론트엔드 연동을 위한 상세 명세서입니다
 - **구글 로그인**: `GET /v1/auth/login/google?frontRedirect={url}`
 - **구글 콜백**: `GET /v1/auth/google/callback` (302 리다이렉트)
 
+### 변경 사항(프론트 영향)
+- 소셜 로그인 시 이메일 동의가 없어도 사용자 생성이 됩니다(제공자 ID + 닉네임 기반).
+- 신규 사용자면 리다이렉트에 `requires_signup=true`와 `signup_token`이 전달됩니다.
+- 기존 사용자면 `token`(access token)이 전달됩니다.
+
 ### JWT 토큰
 - **사용자 정보 조회**: `GET /v1/auth/me` (토큰 검증 포함)
 
@@ -435,7 +440,7 @@ const profileUrl = 'https://joba-project.onrender.com/v1/profile/kakao_12345';
 // 응답 예시
 {
   "user_id": "kakao_12345",
-  "email": "user@example.com",
+  "email": "user@example.com" // 이메일은 선택값이며 null일 수 있음
   "track": "프론트엔드",
   "school": "한국대학교",
   "portfolio_url": "https://portfolio.example.com",
