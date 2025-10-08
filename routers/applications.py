@@ -11,7 +11,7 @@ from database import get_db, Application, Post, PostQuestion, ApplicationAnswer,
 from schemas import (
     ApplicationCreate, ApplicationResponse, ApplicationAnswerCreate,
     ApplicationListItem, ApplicationListResponse, ApplicationDetailResponse,
-    ApplicationStatusUpdate, ApplicationStatusResponse, ApplicationSortEnum, ApplicationStatusEnum
+    ApplicationStatusUpdate, ApplicationStatusResponse, ApplicationSortEnum, ApplicationStatusEnum, MyApplicationListResponse
 )
 from services.file_upload_service import FileUploadService
 from routers.auth import get_current_user
@@ -21,6 +21,7 @@ from datetime import datetime
 from typing import Optional, List
 import json
 from config import settings
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -608,4 +609,63 @@ async def cancel_application(
     )
 
 
- 
+@router.get("/my/applications", response_model=MyApplicationListResponse)
+async def get_my_applications(
+    sort: str = Query("latest", description="정렬 기준 (latest 또는 oldest)"),
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    내가 지원한 공고 목록 조회
+
+    **JWT 인증 필요**
+    
+    - 로그인한 사용자가 지원한 모든 공고를 조회합니다.
+    - 각 지원서에는 지원 상태, 제출일, 연결된 공고 정보가 포함됩니다.
+    - 최신순(latest) / 오래된순(oldest) 정렬을 지원합니다.
+    - 지원 내역이 없으면 빈 리스트([])를 정상 응답으로 반환합니다.
+    """
+    user_id = get_user_id_from_user(current_user)
+
+    # Application ↔ Post JOIN
+    query = (
+        db.query(Application, Post)
+        .join(Post, Application.post_id == Post.id)
+        .filter(Application.user_id == user_id)
+    )
+
+    # 정렬 적용
+    if sort == "latest":
+        query = query.order_by(Application.created_at.desc())
+    elif sort == "oldest":
+        query = query.order_by(Application.created_at.asc())
+
+    applications = query.all()
+
+    result = []
+    for application, post in applications:
+        recruitment_status = "마감" if post.deadline < datetime.now() else "모집중"
+
+        # 해당 공고의 전체 지원자 수 계산
+        application_count = db.query(func.count(Application.id)).filter(
+            Application.post_id == post.id
+        ).scalar()
+
+        result.append({
+            "application_id": application.id,
+            "status": application.status,
+            "submitted_at": application.created_at.strftime("%Y-%m-%d"),
+            "post": {
+                "post_id": post.id,
+                "title": post.title,
+                "description": post.description,
+                "image_url": post.image_url,
+                "recruitment_field": post.recruitment_field,
+                "recruitment_headcount": post.recruitment_headcount,
+                "deadline": post.deadline.strftime("%Y-%m-%d"),
+                "recruitment_status": recruitment_status,
+                "application_count": application_count or 0
+            }
+        })
+
+    return {"applications": result}

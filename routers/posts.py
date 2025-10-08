@@ -9,7 +9,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from database import get_db, Post, User, Application
-from schemas import PostCreate, PostResponse, PostListResponse, RecruitmentFieldEnum, RecruitmentHeadcountEnum, SortEnum
+from schemas import PostCreate, PostResponse, PostListResponse, RecruitmentFieldEnum, RecruitmentHeadcountEnum, SortEnum, PostListMyResponse
 from services.file_upload_service import FileUploadService
 from routers.auth import get_current_user
 import logging
@@ -279,3 +279,70 @@ async def get_post_detail(
         "recruitment_status": recruitment_status
     }
 
+@router.get("/my/posts", response_model=PostListMyResponse)
+async def get_my_posts(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    내가 작성한 공고 목록 조회
+    
+    - 모집중 / 모집마감 분류
+    - field(모집 분야)별 그룹화
+    - 각 공고별 description, image_url, 모집인원수, 지원자 수 포함
+    - 모집중/마감 공고 개수 요약 포함
+    """
+    user_id = str(current_user.user_id)
+    now = datetime.now()
+
+    # 내가 작성한 공고 모두 조회
+    my_posts = (
+        db.query(Post)
+        .filter(Post.user_id == user_id)
+        .order_by(Post.created_at.desc())
+        .all()
+    )
+
+    ongoing, closed = {}, {}
+
+    for post in my_posts:
+        is_ongoing = post.deadline >= now
+        target_group = ongoing if is_ongoing else closed
+        field = post.recruitment_field or "기타"
+
+        # 지원자 수 계산
+        application_count = (
+            db.query(func.count(Application.id))
+            .filter(Application.post_id == post.id)
+            .scalar()
+        )
+
+        post_info = {
+            "id": post.id,
+            "title": post.title,
+            "description": post.description,
+            "image_url": post.image_url,
+            "recruitment_headcount": post.recruitment_headcount,
+            "deadline": post.deadline.strftime("%Y-%m-%d"),
+            "application_count": application_count or 0,
+        }
+
+        if field not in target_group:
+            target_group[field] = []
+        target_group[field].append(post_info)
+
+    # dict → list 변환
+    def to_list_format(grouped_dict):
+        return [{"field": field, "posts": posts} for field, posts in grouped_dict.items()]
+
+    ongoing_list = to_list_format(ongoing)
+    closed_list = to_list_format(closed)
+
+    return {
+        "summary": {
+            "ongoing_count": sum(len(group["posts"]) for group in ongoing_list),
+            "closed_count": sum(len(group["posts"]) for group in closed_list),
+        },
+        "ongoing": ongoing_list,
+        "closed": closed_list,
+    }

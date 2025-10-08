@@ -253,3 +253,112 @@ class NoticeDetailResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+# ----- 내가 작성한 공고 목록 (/my/posts) -----
+
+class MyPostItem(BaseModel):
+    id: int
+    title: str
+    description: str
+    image_url: str
+    recruitment_headcount: str
+    deadline: str
+    application_count: int
+
+    class Config:
+        from_attributes = True
+
+
+class MyPostFieldGroup(BaseModel):
+    field: str
+    posts: List[MyPostItem]
+
+
+class MyPostSummary(BaseModel):
+    ongoing_count: int
+    closed_count: int
+
+
+class PostListMyResponse(BaseModel):
+    summary: MyPostSummary
+    ongoing: List[MyPostFieldGroup]
+    closed: List[MyPostFieldGroup]
+
+    class Config:
+        from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "summary": {
+                    "ongoing_count": 2,
+                    "closed_count": 1
+                },
+                "ongoing": [
+                    {
+                        "field": "프론트엔드",
+                        "posts": [
+                            {
+                                "id": 1,
+                                "title": "AI 웹 서비스 팀원 모집",
+                                "description": "프론트엔드와 백엔드 협업 가능한 분을 찾습니다.",
+                                "image_url": "https://storage.googleapis.com/posts/ai_front.png",
+                                "recruitment_headcount": "3~5인",
+                                "deadline": "2025-10-30",
+                                "application_count": 4
+                            }
+                        ]
+                    },
+                    {
+                        "field": "백엔드",
+                        "posts": [
+                            {
+                                "id": 2,
+                                "title": "클라우드 백엔드 팀원 모집",
+                                "description": "FastAPI 및 PostgreSQL 기반 서비스 개발",
+                                "image_url": "https://storage.googleapis.com/posts/backend_team.png",
+                                "recruitment_headcount": "1~2인",
+                                "deadline": "2025-11-02",
+                                "application_count": 3
+                            }
+                        ]
+                    }
+                ],
+                "closed": [
+                    {
+                        "field": "디자인",
+                        "posts": [
+                            {
+                                "id": 3,
+                                "title": "UX/UI 디자인 공모전 팀원 모집",
+                                "description": "Figma 사용 가능자, 협업 경험 우대",
+                                "image_url": "https://storage.googleapis.com/posts/design_team.png",
+                                "recruitment_headcount": "1~2인",
+                                "deadline": "2025-09-10",
+                                "application_count": 7
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+# ----- 내가 지원한 공고 목록 (/my/applications) -----
+class MyApplicationPost(BaseModel):
+    post_id: int
+    title: str
+    description: str
+    image_url: str
+    recruitment_field: str
+    recruitment_headcount: str
+    deadline: str
+    recruitment_status: str
+    application_count: int
+
+class MyApplicationItem(BaseModel):
+    application_id: int
+    status: str
+    submitted_at: str
+    post: MyApplicationPost
+
+class MyApplicationListResponse(BaseModel):
+    applications: List[MyApplicationItem]
