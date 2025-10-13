@@ -1,0 +1,115 @@
+/* ResultModal.css */
+
+.result-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* 모달이 다른 요소들 위에 나타나도록 설정 */
+}
+
+.result-modal-content {
+  background: white;
+  padding : 20px;
+  border-radius: 15px;
+  width: 267px;
+  height: 369px;
+  box-sizing: border-box; /* 패딩을 크기에 포함시켜 정확한 크기 유지 */
+  text-align: center;
+  position: relative;
+  display: flex;
+}
+
+.result-modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 17px;
+  height: 17px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* 닫기 버튼 안의 이미지 크기 명확히 지정 */
+.result-modal-close-btn img {
+  width: 100%;
+  height: 100%;
+}
+
+.result-modal-inner-content {
+  width: 100%;
+  height: 100%; /* 부모(.modal-content)의 높이를 꽉 채움 */
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-modal-icon {
+  object-fit: contain; /* 이미지가 잘리지 않도록 설정 */
+  margin-bottom: 21px;
+}
+
+.result-modal-title {
+  font-size: 15px;
+  font-family: 'Pretendard-SemiBold';
+  color: #000000;
+  margin: 0 0 8px 0;
+}
+
+.result-modal-text {
+  font-size: 15px;
+  font-family: 'Pretendard-SemiBold';
+  color: #000000;
+  line-height: 1.5;
+}
+
+.result-modal-buttons {
+  /* --- ✨ 핵심 수정 ✨ --- */
+  margin-top : auto;
+  /* --- ✨ 핵심 수정 끝 ✨ --- */
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /* height: 43px; */
+  gap: 7px;
+}
+
+.result-modal-btn {
+  margin-top: auto;
+  width: 100%;
+  height: 43px; /* 버튼 높이는 고정 */
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: none;
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.result-modal-btn.yellow {
+  background-color: #fee500;
+  color: #392020;
+}
+.result-modal-btn.pink {
+  background-color: #f06292;
+  color: white;
+}
+.result-modal-btn.gray {
+  background-color: #e9ecef;
+  color: #868e96;
+}

@@ -1,0 +1,216 @@
+.recruitment-history-page {
+  padding: 76px 20px;
+  background-color: #ffffff;
+  min-height: 100vh;
+  color: #000000;
+  background: linear-gradient(180deg, #ffffff 0%, #c0c0c0 500%);
+  margin-bottom: 32px; /* 하단 여백 추가 */
+}
+
+/* .recruitment-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 24px;
+  height: 48px; 헤더 높이 고정
+}
+
+.recruitment-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.recruitment-header img {
+  position: absolute;
+  left: 0;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+} */
+
+.recruitment-section {
+  margin-top: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding-bottom: 8px; /* 아래쪽 선과의 여백 */
+  border-bottom: 1px solid #e9ecef;
+}
+
+.section-header h2 {
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.section-header .recruit-count {
+  font-size: 15px;
+  color: #ff7693;
+  margin-left: 6px;
+  font-family : 'Pretendard-Medium';
+}
+
+.toggle-text {
+  font-size: 15px;
+  color: #6e738c;
+  font-family : 'Pretendard-Medium';
+  position: relative;
+  padding-right: 18px;
+}
+
+.toggle-text::after {
+  content: '';
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  width: 14px;
+  height: 8px;
+  background-image: url('./images/arrow_down_ios.png'); /* 화살표 아이콘 경로 */
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform: translateY(-50%) rotate(0deg);
+  /* transition: transform 0.2s; */
+}
+
+.toggle-text.open::after {
+  transform: translateY(-50%) rotate(180deg);
+  top : 45%;
+}
+
+.post-group-wrapper {
+  margin-top: 24px;
+}
+
+.post-group {
+  margin-bottom: 32px;
+}
+
+.track-title {
+  /* 변경점: 너비가 내용에 맞게 조절되도록 inline-flex 사용 */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px; /* 아이콘과 텍스트 사이 간격 */
+
+  /* --- 태그 디자인을 위한 스타일 추가 --- */
+  padding: 0 18px;
+  border: 1px solid #b7bbcf;
+  border-radius: 22.5px; /* 타원형 모양을 위한 값 */
+  background-color: #ffffff;
+  
+  /* --- 폰트 스타일 조정 --- */
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #6e738c;
+
+  /* --- 여백 조정 --- */
+  margin: 0;
+  margin-bottom: 12px;
+
+  height: 39px;
+}
+
+.track-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page-divider {
+  height: 8px;
+  background-color: #f1f3f5;
+  margin: 32px -20px; /* 좌우 여백 무시 */
+}
+
+/* --- 카드 아이템 스타일 (디자인에 맞게 수정) --- */
+.recruitment-item {
+  display: flex;
+  background-color: #ffffff;
+  border-radius: 12px;
+  gap: 16px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+}
+
+.recruitment-item:active {
+  transform: scale(0.98);
+}
+
+.recruitment-item .post-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 1px solid #f1f3f5;
+}
+
+.recruitment-item .post-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.recruitment-item .post-title {
+  font-size: 15px;
+  font-family: 'Pretendard-SemiBold';
+  color: #000000;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recruitment-item .post-description {
+  font-size: 12px;
+  font-family: 'Pretendard-Medium';
+  color: #b7bbcf;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recruitment-item .post-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 12px;
+  font-family: 'Pretendard-Medium';
+  margin-top: auto; /* Push to bottom */
+}
+
+.recruitment-item .meta-applicants {
+  display: flex;
+  align-items: center;
+  color: #ff7693;
+}
+
+.recruitment-item .meta-headcount {
+  color: #2b007c;
+  font-family: 'Pretendard-Medium';
+}
+
+.recruitment-item .meta-icon {
+  width: 9px;
+  height: 12px;
+  margin-right: 3px;
+}

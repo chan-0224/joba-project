@@ -1,0 +1,101 @@
+/* 전체 카드 컨테이너 */
+.dev-card {
+  position: relative;
+  width: 374px;
+  /* height: 186px; */
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border : 1px solid #dddfe9;
+}
+
+/* 상단 배경 */
+.dev-background {
+  width: 100%;
+  height: 72px;
+  object-fit: cover;
+  background-image: url('/Home/dev-bg1.png'); /* 이미지 유지 */
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  z-index: 0; /* 배경이 카드 아래에 있도록 설정 */
+}
+
+/* ::after 로 하얀색 그라데이션 오버레이 (아래 → 위) */
+.dev-background::after {
+  content: '';
+  position: absolute;
+  bottom: 0; /* 아래에서 시작 */
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 72%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 하단 흰 배경 정보 카드 */
+.dev-info-card {
+  position: relative;
+  width: 100%;
+  background-color: white;
+  padding-top: 40px;  /* 프로필 이미지 겹침 여유 */
+  padding-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* 프로필 이미지 (겹침) */
+.dev-avatar {
+  position: absolute;
+  top: -37.5px; /* 이미지 반쯤 겹치기 */
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: 2;
+}
+
+/* 이름 */
+.dev-name {
+  margin-top: 9px;
+  font-family: 'Pretendard-Semibold';
+  font-size: 15px;
+  color: #000000;
+}
+
+/* 태그 그룹 */
+.dev-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 공통 태그 스타일 */
+.dev-tag {
+  padding: 4px 12px;
+  border-radius: 22.5px;
+  font-size: 12px;
+  font-family: 'Pretendard-Regular';
+  white-space: nowrap;
+}
+
+.dev-field {
+  background-color: #F1EAFF;
+  color: #2B007C;
+  border: 0.5px solid #C9B6EE;
+}
+
+.dev-univ {
+  background-color: #FFEAEF;
+  color: #FF3762;
+  border: 0.5px solid #FFC0CE;
+}

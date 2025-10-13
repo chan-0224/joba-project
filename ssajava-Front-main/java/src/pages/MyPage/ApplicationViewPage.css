@@ -1,0 +1,69 @@
+.application-view-page {
+  padding: 76px 20px;
+  background-color: #ffffff;
+  min-height: 100vh;
+  color: #000000;
+  background: linear-gradient(180deg, #ffffff 0%, #c0c0c0 500%);
+  margin-bottom: 32px; /* 하단 여백 추가 */
+}
+
+.application-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.application-view-header img {
+  position: absolute;
+  right: 0;
+  cursor: pointer;
+  width: 16.93px;
+  height: 16.93px;
+}
+
+.qa-item {
+  margin-bottom: 33px;
+}
+
+.qa-item h2 {
+  font-size: 15px;
+  font-family : 'Pretendard-Medium';
+  color: #000000;
+  margin: 0 0 8px 0;
+}
+
+.qa-item p {
+  margin: 0;
+  padding: 16px;
+  background: #ffffff;
+  color: #414456;
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  border-radius: 5px;
+  border : 1px solid #dddfe9;
+  line-height: 1.6;
+}
+
+.application-view-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.application-view-footer button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #f06292;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}

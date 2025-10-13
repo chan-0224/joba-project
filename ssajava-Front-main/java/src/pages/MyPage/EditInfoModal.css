@@ -1,0 +1,175 @@
+/* 반투명 배경 오버레이 */
+.modal-overlay-sheet {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; /* 화면 하단에 정렬 */
+  z-index: 1000;
+}
+
+/* 흰색 시트 컨텐츠 */
+.modal-content-sheet {
+  width: 100%;
+  max-width: 414px;
+  height: 780px; /* 고정 높이 */
+  background-color: #ffffff;
+  border-radius: 30px 30px 0 0; /* 위쪽 모서리만 둥글게 */
+  box-sizing: border-box;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  animation: slideUpFromBottom 0.4s ease-out;
+}
+
+/* 아래에서 위로 올라오는 애니메이션 */
+@keyframes slideUpFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.edit-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding-top: 20px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+.edit-info-back-button {
+  position: absolute;
+  left: 0;
+  top: 22px;
+  width: 11px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.edit-info-title {
+  font-size: 20px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+}
+
+.edit-info-divider {
+  width: calc(100% + 40px); /* 좌우 패딩만큼 너비 확장 */
+  margin-left: -20px;
+  height: 1px;
+  background-color: #dddfe9;
+  flex-shrink: 0;
+}
+
+.edit-info-section {
+  display: flex;
+  flex-direction: column;
+  margin-top: 40px;
+}
+
+.edit-info-label-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.edit-info-label {
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+}
+
+.edit-info-required-text {
+  font-size: 12px;
+  color: #f21c00;
+  font-family: 'Pretendard-Medium';
+}
+
+.track-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.track-buttons-row {
+  display: flex;
+  gap: 10px;
+}
+
+.track-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid #b7bbcf;
+  border-radius: 22.5px;
+  background-color: #ffffff;
+  color: #6e738c;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: 'Pretendard-Medium';
+  /* flex-grow: 1; 속성을 이 곳에서 삭제합니다. */
+}
+
+.track-btn.active {
+  background-color: #2b007c;
+  color: #ffffff;
+  border-color: #2b007c;
+  font-family: 'Pretendard-Bold';
+}
+
+.imgfrontend, .imgbackend, .imgplan, .imgdesign, .imgdataanalysis {
+  width: 20px; /* 아이콘 크기 통일 */
+  height: 20px;
+}
+
+.edit-info-input {
+  height: 44px;
+  padding: 0 12px;
+  border: none;
+  background-color: #eff0f5;
+  color: #b7bbcf;
+  border-radius: 5px;
+  font-size: 14px;
+}
+.edit-info-input::placeholder {
+  color: #b7bbcf;
+}
+
+.edit-info-description {
+  font-size: 12px;
+  color: #f21c00;
+  margin: 14px 0 0 0;
+  font-family: 'Pretendard-medium';
+}
+
+.edit-info-save-button {
+  width: 100%;
+  height: 45px;
+  margin-top: 251px; /* 간격 조절 */
+  margin-bottom: 74px; /* 간격 조절 */
+  background-color: #dddfe9;
+  color: #6e738c;
+  border: none;
+  border-radius: 5px;
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.edit-info-save-button:hover,
+.edit-info-save-button:active {
+  background-color: #FF7693;
+  color: #ffffff;
+}

@@ -1,0 +1,205 @@
+/* 추가: 모달 CSS */
+@import url('./ResultModal.css');
+
+.app-history-container {
+  padding: 20px;
+  background-color: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #c0c0c0 500%);
+  min-height: 100vh;
+}
+
+.app-history-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top : 29px;
+  margin-bottom: 16px;
+}
+
+.filter-label-container {
+  display: flex;
+  align-items: center;
+}
+
+.filter-label {
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+}
+
+.filter-count {
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #ff7693;
+}
+
+.filter-unit {
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+}
+
+.sort-dropdown {
+  margin-left: auto;
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #6e738c;
+}
+
+.sort-dropdown-icon {
+  width: 14px;
+  height: 8px;
+  margin-left: 4px;
+}
+
+.app-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 21px;
+}
+
+.application-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 14px 16px 14px 14px;
+  background-color: #ffffff;
+  border-radius: 5px;
+  gap: 18px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  /* transition: transform 0.2s ease-in-out; */
+  transition: background-color 0.2s, transform 0.2s; /* 부드러운 효과를 위한 transition 추가 */
+  box-shadow: 0px 0px 5px #41445620;
+}
+
+.application-item:active,
+.application-item:focus,
+.application-item:hover {
+  background-color: #ffe3e9;
+}
+
+.application-item .post-image {
+  display : flex;
+  width: 99px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.application-item .post-info {
+  display: flex;
+  height: 84px;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: center;
+  min-width: 0;
+}
+
+.post-title {
+  font-size: 15px;
+  font-family : 'Pretendard-SemiBold';
+  color: #000000;
+  margin: 0 0 5px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-description {
+  font-family : 'Pretendard-Medium';
+  font-size: 12px;
+  color: #b7bbcf;
+  margin: 0 0 25px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.application-item:active .post-description,
+.application-item:focus .post-description,
+.application-item:hover .post-description {
+  color: #ffa8bb; /* 요구사항 2: 설명 텍스트 색상 변경 */
+}
+
+.post-meta {
+  font-family : 'Pretendard-Medium';
+  font-size: 12px;
+  display: flex;
+  justify-content : space-between;
+  align-items: center;
+  gap: 18px;
+
+  width: 100%;
+
+  /* --- 우측 하단 정렬을 위한 핵심 코드 --- */
+  margin-top: auto;      /* 위쪽으로 남는 공간을 모두 여백으로 만들어 아래로 밀어냄 */
+  align-self: flex-end;  /* 세로 flex 컨테이너에서 스스로를 오른쪽 끝으로 정렬 */
+  
+  /* 요구사항: 리스트 내부에서 우측 여백 19px */
+  /* 부모의 padding 16px과 별개로 계산되므로, 정확한 값은 시각적으로 조정이 필요할 수 있습니다. */
+  /* 여기서는 부모의 content 영역 끝에서 19px 떨어지도록 margin을 사용합니다. */
+  margin-right: 3px; /* 16px(부모 padding) + 3px = 19px */
+}
+
+.meta-applicants {
+  display: flex;
+  align-items: center;
+  color: #ff7693;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.meta-headcount {
+  display: flex;
+  align-items: center;
+  color: #2b007c;
+}
+
+/* .post-submeta {
+  display: flex;
+  align-items : center;
+  gap : 5px;
+  margin-left: auto
+} */
+
+/* .post-meta .divider {
+  color: #ced4da;
+} */
+
+.meta-icon {
+  width: 9px;
+  height: 12px;
+}
+
+.application-item.rejected {
+  /* 블러 처리를 위한 스타일 */
+  pointer-events: none;
+}
+
+.recruitment_count {
+  color: #ff7693;
+}
+
+.recruitment_headcount {
+  color: #2b007c;
+  flex-shrink: 0; /* 너비가 줄어들지 않도록 방지 */
+}
+
+.rejected-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #41445620;
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-family: "Pretendard-SemiBold";
+  font-size: 20px;
+}

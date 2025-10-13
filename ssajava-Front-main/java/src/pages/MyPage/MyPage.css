@@ -1,0 +1,170 @@
+/* 전체 컨테이너 */
+.mypage-container-new {
+  display: flex;
+  flex-direction: column;
+  padding: 90px 20px 140px 20px;
+  background-color: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #c0c0c0 500%);
+  width: 100vw;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  font-family: 'Pretendard-medium';
+}
+
+/* 상단 프로필 섹션 */
+.mypage-profile-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 38px;
+  cursor: pointer;
+}
+
+.mypage-avatar-new {
+  width: 67px;
+  height: 67px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #f0f1f5;
+}
+
+.mypage-user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mypage-username-new {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.mypage-username-context {
+  font-size: 20px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+}
+
+.mypage-setting-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.mypage-user-field {
+  font-size: 15px;
+  color: #6e738c;
+  /* margin-top: 14px; */
+}
+
+/* 메인 카드 메뉴 */
+.card-header {
+  font-family: 'Pretendard-SemiBold';
+  font-size: 15px;
+  color: #b7bbcf;
+  margin-bottom: 23px;
+}
+
+.mypage-main-cards {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 66px;
+}
+
+.mypage-card {
+  flex: 1;
+  width:179px;
+  height: 235px;
+  background-color: #f7f8fc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-text {
+  z-index: 1;
+}
+
+.card-text .card-title {
+  font-family: 'Pretendard-SemiBold';
+  font-size: 22px;
+  color: #ffffff;
+  padding-left: 20px;
+  padding-top: 15px;
+}
+
+.card-icon {
+  position: absolute;
+  right: -10px;
+  bottom: -20px;
+  width: 200px;
+  height: 265px;
+  object-fit: contain;
+}
+
+/* 설정 및 정보 리스트 */
+.list-header {
+  font-family : 'Pretendard-SemiBold';
+  font-size: 15px;
+  color: #b7bbcf;
+  margin-bottom: 35px;
+}
+
+.mypage-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap : 55px;
+  margin-bottom: 40px;
+}
+
+.mypage-settings-list .list-header:first-child {
+  border-top: none;
+  margin-top: 0;
+}
+
+.list-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-family: 'Pretendard-Medium';
+  font-size: 20px;
+  color: #252732;
+  cursor: pointer;
+}
+
+.list-item:hover {
+  background-color: #f9f9f9;
+}
+
+.list-item-icon {
+  width: 19px;
+  height: 19px;
+  margin-right: 12px;
+}
+
+.list-item-text {
+  flex-grow: 1;
+}
+
+.list-arrow-icon {
+  width: 10px;
+  height: 16px;
+}
+
+.version-info {
+  font-size: 20px;
+  color: #6e738c;
+  margin-left: 12px; 
+}
+
+.withdraw {
+  font-family: 'Pretendard-Medium';
+  font-size: 20px;
+  color: #f30034;
+}

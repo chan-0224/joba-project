@@ -1,0 +1,255 @@
+/* index.css 또는 Signup2.css 가장 아래에 추가 */
+.signup2-wrapper {
+  width: 100vw;
+  height: 100dvh;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 32px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.signup2-container {
+  width: 100%;
+  max-width: 414px;
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: transparent;  /* ✅ 카드 안에서 배경 따로 없음 */
+}
+
+
+/* .signup2-container {
+  display : flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100dvh;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  /* overflow : hidden; * /
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 25px;
+  margin-top : 51px;
+} */
+
+/* ------------ 안내문/라벨 ------------ */
+.section-title-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 64px;
+  margin-bottom: 22px;
+}
+
+.section-title {
+  display : flex;
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+}
+
+.section-title2 {
+  display : flex;
+  font-size: 12px;
+  color: #f21c00;
+  font-family: 'Pretendard-Medium';
+}
+
+/* ------------ 트랙 버튼 ------------ */
+.track-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.track-buttons-header {
+  display: flex;
+  flex-direction: row;
+  gap: 11px;
+}
+
+.track-buttons-header2 {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+/* 트랙 비활성(기본) */
+.track-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  height: 39px;
+  border: 1px solid #b7bbcf;      
+  border-radius: 22.5px;
+  background-color : #ffffff;
+  color: #6e738c;                    
+  font-size: 15px;
+  font-family: 'Pretendard-medium';
+  /* transition: all 0.15s; */
+  cursor: pointer;
+  min-width: 90px;
+}
+
+.track-btn .track-buttons-text {
+  font-family: 'Pretendard-medium';
+  color: inherit;
+}
+
+/* 트랙 활성 */
+.track-btn.active {
+  background-color: #2b007c;
+  color: #ffffff;
+  border: 1px solid #2b007c;
+  font-family : 'Pretendard-bold';
+}
+.track-btn.active .track-buttons-text {
+  color: #ffffff;
+  font-family : 'Pretendard-bold';
+}
+
+/* 트랙 hover(비활성 버튼만) */
+.track-btn:hover:not(.active) {
+  background-color: #ffffff;              
+  color: #6e738c;
+  border: 1px solid #b7bbcf;
+}
+
+.track-btn:focus {
+  outline: none;
+}
+
+/* 트랙 아이콘 크기 유지 */
+.imgfrontend, .imgbackend{
+  width: 19px;
+  height: 19px;
+}
+.imgplan{
+  width: 23px;
+  height: 23px;
+}
+
+.imgdesign{
+  width: 22px;
+  height: 22px;
+}
+
+.imgdataanalysis{
+  width: 21px;
+  height: 21px;
+}
+
+/* ------------ 입력 영역 ------------ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: 28px;
+  width: 100%;
+  gap : 10px;
+}
+
+.form-group.univ {
+  margin-top: 25px;
+}
+
+.form-group2 {
+  display: flex;
+  flex-direction: column;
+  margin-top: 25px;
+  width: 100%;
+  gap : 10px;
+}
+
+.form-group label {
+  display : flex;
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+}
+
+.form-group2 label {
+  display : flex;
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+}
+
+.form-group input,
+.form-group2 input {
+  height: 44px;
+  padding-left : 12px;
+  border: none;
+  background-color: #eff0f5;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: 'Pretendard-medium';
+  color: #b7bbcf;
+}
+
+.form-group input::placeholder,
+.form-group2 input::placeholder {
+  color: #b7bbcf;
+  font-family: 'Pretendard-medium';
+}
+
+.form-group input:focus,
+.form-group2 input:focus {
+  outline: none;
+  color: #000000;
+}
+
+/* 안내문 */
+.form-group-discription {
+  font-size: 12px;
+  color: #f21c00;
+  margin: 14px 0 0 10px;
+  font-family: 'Pretendard-medium';
+}
+
+/* ------------ 가입하기 버튼 ------------ */
+.submit-btn {
+  width: 100%;
+  max-width: 374px;
+  height: 45px;
+  margin-top: 59px;
+  border: none;
+  background-color: #dddfe9;
+  border-radius: 5px;
+  font-size: 15px;
+  font-family: 'Pretendard-medium';
+  color: #6e738c;
+  text-align: center;
+  cursor: not-allowed;
+  /* position : absolute;
+  bottom : 74px; */
+  margin-bottom : 74px;
+}
+
+/* 활성(Enable) 상태 */
+.submit-btn.active {
+  background-color: #FF7693;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.submit-btn:focus {
+  outline: none;
+}
+
+/* 반응형
+@media (max-width: 480px) {
+  .signup2-container {
+    padding: 12px;
+  }
+  .signup2-header {
+    gap: 60px;
+  }
+  .signup2-divider {
+    margin-left: -12px;
+  }
+} */
+

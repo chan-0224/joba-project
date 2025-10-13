@@ -1,0 +1,128 @@
+/* src/pages/Announcements/Announcements.css */
+
+.announcement-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #c0c0c0 500%);
+  width: 100%;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  font-family: 'Pretendard-Medium';
+}
+
+/* 헤더 스타일 */
+.announcement-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 51px 20px 45px 20px;
+  background-color: #ffffff; /* 헤더 배경색 명시 */
+  z-index: 10;
+}
+
+.back-button {
+  position: absolute;
+  width: 11px;
+  height: 18px;
+  left: 18px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #000000;
+  cursor: pointer;
+}
+
+.header-title {
+  font-size: 20px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+  margin: 0;
+}
+
+/* ✅ [수정] 목록 전체를 감싸는 영역 스타일 */
+.announcement-list {
+  padding: 16px 20px; /* 목록의 상하좌우 여백 설정 */
+  display: flex; /* Flexbox 레이아웃 사용 */
+  flex-direction: column; /* 아이템을 세로로 정렬 */
+  gap: 12px; /* 각 박스(카드) 사이의 간격을 12px로 설정 */
+}
+
+.announcement-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  background-color: #ffffff; /* 박스의 배경색 */
+  border-radius: 5px; /* 박스의 모서리를 둥글게 */
+  padding: 20px; /* 박스 내부의 여백 */
+  
+  border-bottom: none; /* 기존의 하단 선 제거 */
+  
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s; /* 부드러운 효과를 위한 transition 추가 */
+  box-shadow: 0px 0px 5px #41445620;
+}
+
+.announcement-item:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+}
+
+.item-title {
+  font-size: 15px;
+  font-family: 'Pretendard-SemiBold';
+  color: #000000;
+}
+
+.item-link {
+  display: flex;
+  align-items: center;
+  flex-direction : row;
+  font-size: 12px;
+  font-family: 'Pretendard-Medium';
+  color: #2b007c;
+}
+
+.announcement-arrow-icon {
+  align-items: center;
+  width: 7px;
+  height: 12px;
+  margin-left: 10px; /* 텍스트와 아이콘 사이의 간격 */
+}
+
+/* 상세 페이지 스타일 (기존과 동일) */
+.announcement-detail {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 12px;
+}
+
+.detail-date {
+  font-size: 12px;
+  color: #b7bbcf;
+  margin-bottom: 8px;
+}
+
+.detail-title {
+  font-size: 22px;
+  font-family: 'Pretendard-SemiBold';
+  color: #000000;
+  margin: 0 0 14px 0;
+}
+
+.detail-separator {
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 37px;
+}
+
+.detail-content {
+  font-family: 'Pretendard-Medium';
+  font-size: 15px;
+  color: #414456;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0;
+}

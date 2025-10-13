@@ -1,0 +1,101 @@
+/* body에 modal-open 클래스가 있을 때, 그 안의 .main-footer를 숨김 */
+body.modal-open .main-footer {
+  display: none;
+}
+
+.main-footer{
+    position : fixed;
+    bottom : 0;
+    width : 100%;
+    max-width : 414px;
+    height : 121px;
+    background-color : #ffffff;
+    display : flex;
+    justify-content : space-around;
+    align-items : flex-start;
+    padding-top : 12px;
+    z-index: 1000;
+}
+
+.main-footer-content {
+    display : flex;
+    flex-direction : row;
+    align-items : flex-start;
+    justify-content : center;
+    gap : 47px;
+    cursor : pointer;
+}
+
+.main-footer-home {
+    display : flex;
+    flex-direction : column;
+    align-items : center;
+    gap : 8px;
+}
+
+.main-footer-icon-home {
+    width : 36px;
+    height : 28px;
+}
+
+.footer-text-active {
+    font-family : 'Pretendard-medium';
+    font-size : 10px;
+    text-align : center;
+    color : #2b007c
+}
+
+.footer-text {
+    font-family : 'Pretendard-medium';
+    font-size : 10px;
+    color : #b7bbcf;
+    text-align : center;
+}
+
+.main-footer-profile {
+    display : flex;
+    flex-direction : column;
+    align-items : center;
+    gap : 7px;
+}
+
+.main-footer-icon-profile {
+    width : 29px;
+    height : 28px;
+}
+
+.main-footer-mypage {
+    display : flex;
+    flex-direction : column;
+    align-items : center;
+    gap : 8.49px;
+}
+
+.main-footer-icon-mypage {
+    width : 29.41px;
+    height : 24.51px;
+}
+
+.main-footer-advertise {
+    display : flex;
+    flex-direction : column;
+    align-items : center;
+    gap : 6px;
+}
+
+.main-footer-icon-advertise {
+    width : 25px;
+    height : 28px;
+}
+
+.main-footer-mentoring {
+    display : flex;
+    flex-direction : column;
+    align-items : center;
+    gap : 6px;
+}
+
+.main-footer-icon-mentoring {
+    width : 28px;
+    height : 27px;
+}

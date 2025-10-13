@@ -1,0 +1,469 @@
+/* ───────────────────────────────────────────
+   EditProfile.css (가독성 좋은 줄바꿈/정렬 버전)
+   - Edit 화면에서만 배너/아바타에 어둡게 오버레이
+   - Profile 화면에는 이 오버레이가 나타나지 않음
+   - Pretendard 폰트 기준
+─────────────────────────────────────────── */
+
+/* ========== 전체 레이아웃 ========== */
+.editprofile-page {
+  width: 100vw;
+  max-width: 414px;
+  min-height: 100dvh;
+  background: #fff;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Pretendard-Medium';
+  color: #000;
+  position: relative;
+  padding-bottom: 121px; /* 하단 저장바 공간 확보 */
+}
+
+/* ========== 상단 배너(편집 전용 오버레이) ========== */
+.editprofile-top-banner {
+  position: relative;
+  width: 100%;
+  height: 197px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  cursor: pointer; /* 배너 아무데나 눌러 업로드 */
+}
+
+/* 편집화면에서만 어둡게 보이게 하는 반투명 레이어 */
+.editprofile-top-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #41445655;
+}
+
+/* 닫기/카메라 공통 버튼 */
+.glass-icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.edit-closebtn {
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+}
+
+/* .edit-changeImg {
+  width: 45px;
+  height: 44px;
+} */
+
+.glass-icon.close {
+  top: 49px;
+  right: 20px;
+}
+
+.glass-icon.change {
+  bottom: 39px;
+  right: 150px;
+}
+
+/* ========== 아바타 영역 ========== */
+.editprofile-img-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.avatar-box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -58px;   /* /profile 과 동일한 배치 */
+  z-index: 2;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;     /* 아바타 아무데나 눌러 업로드 */
+}
+
+.editprofile-img {
+  width: 117px;
+  height: 117px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #41445655;
+  border: 7px solid #ffffff;
+}
+
+/* 아바타 카메라 아이콘 */
+.glass-icon.avatar-change {
+  width: 117px;
+  height: 117px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #41445655;
+  border: 7px solid #ffffff;
+}
+
+.edit-changeImg{
+  position: absolute;
+  right: 35px;
+  bottom: 35px;
+  width: 45px;
+  height: 44px;
+}
+
+/* 시간표 버튼 (아바타 아래) */
+.timetable-btn {
+  margin-top: -18px;
+  background: #ff7693;
+  color: #ffffff;
+  border: none;
+  border-radius: 24.5px;
+  padding: 9px 13px;
+  font-size: 12px;
+  font-family: 'Pretendard-SemiBold';
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* ========== 메인 카드 ========== */
+.editprofile-card {
+  background: #fff;
+  padding: 14px 20px 28px 20px;
+}
+
+/* ========== 이름 영역(연필 클릭 시 입력) ========== */
+.editprofile-name-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.editprofile-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-left : 20px;
+}
+
+/* 표시용 텍스트 */
+.editprofile-name-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-family: 'Pretendard-SemiBold';
+  color: #000;
+}
+
+/* 입력창(연필 클릭 시 활성) */
+.editprofile-name-input {
+  border: none;
+  background: transparent;
+  color: #000;
+  text-align: center;
+  font-size: 22px;
+  font-family: 'Pretendard-SemiBold';
+  outline: none;
+  width: 120px;
+  padding: 4px 8px;
+  border-bottom: 1px solid #dddfe9; /* 편집 중임을 가볍게 표시 */
+}
+
+.editprofile-edit-btn {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+/* ========== 태그 미리보기 ========== */
+.editprofile-tags {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.tag {
+  padding: 4px 12px;
+  border-radius: 22.5px;
+  font-size: 12px;
+  font-family: 'Pretendard-Regular';
+  white-space: nowrap;
+}
+
+.tag-field {
+  background-color: #F1EAFF;
+  color: #2B007C;
+  border: 0.5px solid #C9B6EE;
+}
+
+.tag-univ {
+  background-color: #FFEAEF;
+  color: #FF3762;
+  border: 0.5px solid #FFC0CE;
+}
+
+/* ========== 포트폴리오 입력 ========== */
+.editprofile-form {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 12px;
+  font-family:'Pretendard-Medium';
+}
+
+.form-control {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.input {
+  flex: 1;
+  height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: #eff0f5;
+  color: #b7bbcf;
+  padding: 0 12px;
+  font-size: 12px;
+  font-family: 'Pretendard-Medium';
+}
+
+.input::placeholder {
+  color: #b7bbcf;
+}
+
+.file-btn {
+  width: 92px;
+  height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: #2b007c;
+  color: #ffffff;
+  font-size: 12px;
+  font-family: 'Pretendard-Bold';
+  cursor: pointer;
+}
+
+/* 구분선 */
+.edit-profile-divider {
+  width: 414px;
+  height: 1px;
+  background-color: #dddfe9;
+  margin-top: 33px;
+  margin-left: -20px;
+  margin-right: -20px;
+  margin-bottom:38px;
+}
+
+/* ========== 타임라인 편집 ========== */
+.timeline-edit {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.tl-year-block {
+  margin-bottom: 34px;
+}
+
+.tl-year-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.tl-year-input {
+  width: 39px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #6e738c;
+  outline: none;
+}
+
+.tl-year-pencil {
+  width: 14px;
+  height: 14.42px;
+  opacity: 0.9;
+}
+
+.tl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 18px;
+  position: relative;
+}
+
+.tl-list::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 15px;
+  bottom: 0;
+  border: dashed 0.1px #ff7693;
+}
+
+.tl-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin: 15px 0;
+}
+
+.tl-dot {
+  position: absolute;
+  left: -8px;
+  top: 15px;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff7693;
+}
+
+.tl-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 8px 19px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'Pretendard-Medium';
+  color: #000000;
+}
+
+.tl-input:focus {
+  background: transparent;
+  color : #000000;
+  outline: none;
+}
+
+.tl-remove {
+  border: none;
+  background: #f1f3fa;
+  color: #6c7590;
+  font-size: 12px;
+  font-family: 'Pretendard-Medium';
+  padding: 6px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.tl-add-row {
+  margin-top: 22px;
+}
+
+.tl-add-link {
+  border: none;
+  background: none;
+  color: #b7bbcf;
+  font-size: 12px;
+  padding-left: 19px;
+  cursor: pointer;
+  font-family: 'Pretendard-Medium';
+}
+
+.tl-year-actions {
+  margin-top: 28px;
+  justify-content:center;
+  display: flex;
+  margin-left : -28px;
+}
+
+.tl-year-delete {
+  border: none;
+  background: #414456;
+  color: #eff0f5;
+  font-size: 12px;
+  font-family : 'Pretendard-Medium';
+  padding: 10px 20px;
+  border-radius: 16.5px;
+  cursor: pointer;
+}
+
+.tl-add-year-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  margin-left : -28px;
+}
+
+.tl-add-year {
+  border: 1px dashed #cdd3e1;
+  background: #ffffff;
+  color: #5a6a8f;
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ========== 하단 저장 바 ========== */
+.editprofile-footer-save {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 414px;
+  height: 121px; /* 메인푸터와 동일 높이 */
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 16px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, .06);
+  z-index: 999;
+}
+
+.editprofile-footer-save button {
+  width: calc(100% - 40px);
+  height: 45px;
+  background: #ff7693;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: 'Pretendard-Bold';
+  cursor: pointer;
+}
+
+/* ========== 위험 영역(전체 삭제) ========== */
+.editprofile-danger {
+  margin-top: 16px;
+}
+
+.danger-btn {
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: 20px;
+  background: #2c2c2c;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}

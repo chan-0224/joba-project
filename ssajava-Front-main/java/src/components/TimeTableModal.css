@@ -1,0 +1,103 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검정 배경 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  position: relative;
+  background-color: white;
+  border-radius: 15px;
+  padding: 16px;
+  width: 90%;
+  max-width: 328px;
+  height: 492px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.close-btn {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color : #000000;
+}
+
+.close-icon-img {
+  width: 16.93px;
+  height: 16.93px;
+}
+
+.timetable-img {
+  width: 100%;
+  height : 100%;
+  border-radius: 10px;
+  object-fit: contain;
+  margin-top : 20px;  
+  
+}
+
+.upload-guide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #999999;
+  font-size: 14px;
+  font-family: 'Pretendard-medium';
+  text-align: center;
+}
+
+.timetable-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: -20px;
+  gap : 10px;
+  font-family : 'Pretendard-medium';
+  font-size : 14px;
+}
+
+.upload-btn {
+  margin-top: 20px;
+  background-color: #ff7693;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 24px;
+  cursor: pointer;
+}
+
+.reupload-btn {
+  margin-top: 20px;
+  background-color: #dddfe9;
+  color: #6e738c;
+  padding: 10px 16px;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s ease;
+}
+
+.reupload-btn:active {
+  background-color: #2b007c;
+  color : #ffffff;
+}
+
+.remove-btn {
+  margin-top: 20px;
+  background-color: #ff4d4f;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 24px;
+  cursor: pointer;
+}

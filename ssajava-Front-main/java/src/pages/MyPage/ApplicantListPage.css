@@ -1,0 +1,109 @@
+.applicant-list-page {
+  padding: 76px 20px;
+  background-color: #ffffff;
+  min-height: 100vh;
+  color: #000000;
+  background: linear-gradient(180deg, #ffffff 0%, #c0c0c0 500%);
+  margin-bottom: 32px; /* 하단 여백 추가 */
+}
+
+.applicant-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 48px; /* 헤더 높이 고정 */
+  margin-bottom: 13px;
+}
+
+.applicant-count-badge {
+  position: absolute;
+  right: 0;
+  font-size: 15px;
+  font-family: 'Pretendard-Medium';
+  color: #ff7693;
+}
+
+.applicant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.applicant-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.08);
+  /* border: 1px solid #f1f3f5; */
+  cursor: pointer;
+}
+
+.applicant-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.applicant-info h4 {
+  margin: 0;
+  font-size: 15px;
+  font-family : 'Pretendard-SemiBold';
+  color: #000000;
+}
+
+.applicant-info p {
+  margin-left: 10px;
+  font-size: 15px;
+  font-family : 'Pretendard-Medium';
+  color: #6e738c;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot-divider {
+  color: #6e738c;
+}
+
+.dot-icon {
+  width: 6px;
+  height: 6px;
+  object-fit: contain;
+}
+
+.view-application-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-family : 'Pretendard-Medium';
+  color: #2b007c;
+  cursor: pointer;
+}
+
+.view-arrow-icon {
+  align-items: center;
+  width: 7px;
+  height: 12px;
+  margin-left: 10px; /* 텍스트와 아이콘 사이의 간격 */
+}
+
+.applicant-footer-note {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 12px;
+  color: #ff7693;
+}
+
+.no-applicants {
+  text-align: center;
+  color: #868e96;
+  padding: 40px 0;
+}
